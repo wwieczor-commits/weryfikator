@@ -130,6 +130,23 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
 .btns{display:flex;flex-wrap:wrap;gap:10px}
 .btn.sec{background:var(--panel);color:var(--accent);border:1.5px solid var(--accent)}
 .report{display:none}
+/* baza klientów */
+.crm{border-top:4px solid var(--strip)}
+#crmLogin{display:grid;gap:14px}
+.crm .who{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;font-size:14px;color:var(--muted)}
+.crm textarea{font:inherit;font-size:15px;width:100%;min-height:70px;resize:vertical;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:9px 10px}
+.crm .cur{font-size:14px;background:var(--accent-soft);border-radius:7px;padding:8px 12px;margin:0}
+.crm .msg{font-size:14px;margin:0;font-weight:600}
+.crm .msg.err{color:var(--bad)} .crm .msg.ok{color:var(--ok)}
+.cases{display:grid;gap:8px;max-height:420px;overflow:auto}
+.case{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg)}
+.case.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.case b{font-family:var(--font-display);font-size:15px;overflow-wrap:anywhere}
+.case .meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.case .amt{font-family:var(--font-mono);font-size:14px;text-align:right;white-space:nowrap}
+.case .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.case .acts button{background:var(--panel);border:1px solid var(--line);color:var(--accent);border-radius:6px;font:inherit;font-size:13px;font-weight:600;padding:5px 12px;cursor:pointer}
+.case .acts .del{color:var(--muted);font-weight:400}
 @media print{
   @page{size:A4;margin:14mm 14mm 16mm}
   :root,:root:not([data-theme="light"]),:root[data-theme="dark"]{
@@ -193,6 +210,35 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
   <div class="grid">
     <div class="forms">
       <p id="jsWarn" style="margin:0;padding:12px 14px;border-radius:7px;background:var(--bad-soft);color:var(--bad);font-weight:600">Ten podgląd nie uruchamia kalkulatora, więc wynik się nie przelicza. Otwórz plik w przeglądarce (Safari lub Chrome) albo przez link do strony.</p>
+      <section class="card crm" id="crm" aria-labelledby="h-crm" hidden>
+        <h2 id="h-crm">Baza klientów</h2>
+        <div id="crmOff" hidden><p class="hint">Baza klientów nie jest jeszcze podłączona.</p></div>
+        <form id="crmLogin" hidden>
+          <p class="hint">Dostęp tylko dla kancelarii. Zaloguj się, żeby zapisywać i otwierać sprawy klientów.</p>
+          <div class="row">
+            <label for="crmEmail">E-mail<input id="crmEmail" type="email" autocomplete="username" required></label>
+            <label for="crmPass">Hasło<input id="crmPass" type="password" autocomplete="current-password" required></label>
+          </div>
+          <div class="btns"><button class="btn" type="submit">Zaloguj</button><button class="btn sec" type="button" id="crmHide">Ukryj</button></div>
+        </form>
+        <div id="crmIn" hidden style="display:grid;gap:14px">
+          <div class="who"><span>Zalogowano: <b id="crmUser"></b></span><button type="button" class="linkbtn" id="crmLogout">Wyloguj</button></div>
+          <p class="cur" id="crmCur"></p>
+          <p class="hint">Imię i nazwisko klienta oraz położenie działki wpisz w kroku 1 (Właściciel, Położenie). Tu dopisz kontakt.</p>
+          <div class="row">
+            <label for="crmTel">Telefon<input id="crmTel" type="tel" autocomplete="off"></label>
+            <label for="crmMail">E-mail klienta<input id="crmMail" type="email" autocomplete="off"></label>
+            <label for="crmStatus">Status sprawy
+              <select id="crmStatus"><option>Nowa</option><option>W toku</option><option>Umowa podpisana</option><option>Zakończona</option><option>Odrzucona</option></select>
+            </label>
+          </div>
+          <label for="crmNote">Notatka<textarea id="crmNote"></textarea></label>
+          <div class="btns"><button class="btn" type="button" id="crmSave">Zapisz klienta</button><button class="btn sec" type="button" id="crmNew">Nowa sprawa</button></div>
+          <label for="crmSearch">Zapisane sprawy<input id="crmSearch" type="search" placeholder="szukaj: nazwisko, miejscowość, działka, telefon" autocomplete="off"></label>
+          <div class="cases" id="crmList"></div>
+        </div>
+        <p class="msg" id="crmMsg" role="status"></p>
+      </section>
       <p class="example">Formularz jest wypełniony przykładowymi danymi (działka budowlana: linia średniego napięcia przez środek i wodociąg przy granicy). Wpisz dane swojej działki.</p>
 
       <section class="card" aria-labelledby="h-dz">
@@ -342,7 +388,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     <p>Jak liczymy: dla każdego urządzenia wynagrodzenie = cena × (pas bez słupów i obiektów) × k + cena × teren pod słupami i obiektami. Współczynnik k zależy od przeznaczenia gruntu, możliwości zabudowy i położenia urządzenia (przez środek działki ×1,2, ukośnie ×1,05, przy granicy ×0,75). Do sumy dochodzi spadek wartości reszty działki. Bezumowne korzystanie = roczna stopa × wartość ograniczeń × liczba lat. To dwa odrębne roszczenia (art. 305² oraz art. 224–225 Kodeksu cywilnego). Widełki to −25% / +30% od wartości środkowej.</p>
     <p>Wynik jest orientacyjny i nie zastępuje operatu szacunkowego rzeczoznawcy ani porady prawnej. Szerokości pasów to wartości typowe; rzeczywiste wynikają z dokumentacji operatora, norm i miejscowego planu.</p>
     <p>Podstawa: wyrok Trybunału Konstytucyjnego z 2 grudnia 2025 r., sygn. P 10/16 (zasiedzenie służebności przesyłu za okres przed 3 sierpnia 2008 r.). Na dzień przygotowania kalkulatora wyrok nie był opublikowany w Dzienniku Ustaw.</p>
-    <p style="margin-top:6px;color:var(--fg);opacity:.7">© 2026 Wojciech Wieczorek</p>
+    <p style="margin-top:6px;color:var(--fg);opacity:.7">© 2026 Wojciech Wieczorek · <button type="button" class="linkbtn" id="crmOpen">Baza klientów (logowanie)</button></p>
   </footer>
 </div>
 
@@ -716,11 +762,200 @@ Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w opera
   });
   window.addEventListener("beforeprint", () => { calc(); buildReport(); });
 
+  // stan formularza – do zapisu i odczytu sprawy w bazie klientów
+  const FIELDS = ["parcelId","landType","owner","place","area","price","impact","rest","years","rate","built","contract","decision","paid","usuc"];
+  function getState(){
+    const s = {restManual, devices: [...document.querySelectorAll(".dev")].map(el => ({
+      type: el.querySelector(".f-type").value, pos: el.querySelector(".f-pos").value,
+      len: el.querySelector(".f-len").value, w: el.querySelector(".f-w").value,
+      n: el.querySelector(".f-n").value, a: el.querySelector(".f-a").value }))};
+    FIELDS.forEach(id => s[id] = $(id).value);
+    return s;
+  }
+  function setState(s){
+    FIELDS.forEach(id => { if(s[id] !== undefined) $(id).value = s[id]; });
+    $("devices").innerHTML = "";
+    (s.devices || []).forEach(d => TYPES[d.type] && addDevice(d));
+    if(!document.querySelector(".dev")) addDevice();
+    refreshTypeLists();
+    restManual = !!s.restManual;
+    if(s.rest !== undefined) $("rest").value = s.rest;
+    calc();
+  }
+
   // przykład startowy
   addDevice({type:"sn", len:40, pos:"srodek"});
   addDevice({type:"woda", len:30, pos:"granica"});
   refreshTypeLists();
   calc();
+  window.__form = {getState, setState, initial: getState()};
+})();
+</script>
+
+<script>
+// ===== Baza klientów (Supabase) =====
+// Klucz publiczny (publishable / anon) może być w kodzie strony. Dane chroni logowanie i zasady dostępu w bazie.
+(function(){
+  const SB_URL = "https://aypxpsuzobcjoiquucws.supabase.co";
+  const SB_KEY = "";
+  const $ = id => document.getElementById(id);
+  const F = window.__form;
+  if(!F) return;
+  const LS = "weryfikator.sesja";
+  let sess = null, cases = [], curId = null, savedSnap = null;
+
+  const store = {
+    get(){ try{ return JSON.parse(localStorage.getItem(LS) || "null"); }catch(e){ return null; } },
+    set(v){ try{ v ? localStorage.setItem(LS, JSON.stringify(v)) : localStorage.removeItem(LS); }catch(e){} }
+  };
+  const msg = (t, kind) => { $("crmMsg").textContent = t || ""; $("crmMsg").className = "msg" + (kind ? " " + kind : ""); };
+  const zl = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v||0)) + " zł";
+  const dt = v => v ? new Date(v).toLocaleString("pl-PL",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+
+  async function auth(path, body){
+    const r = await fetch(SB_URL + "/auth/v1/" + path, {method:"POST", headers:{apikey:SB_KEY, "Content-Type":"application/json"}, body:JSON.stringify(body)});
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(j.error_description || j.msg || j.message || ("Błąd " + r.status));
+    return j;
+  }
+  function keep(j){
+    sess = {access_token:j.access_token, refresh_token:j.refresh_token, expires_at:j.expires_at || (Math.floor(Date.now()/1000) + (j.expires_in||3600)), email:(j.user && j.user.email) || (sess && sess.email) || ""};
+    store.set(sess);
+  }
+  async function token(){
+    if(!sess) throw new Error("Zaloguj się ponownie.");
+    if(sess.expires_at - 60 < Date.now()/1000){
+      try{ keep(await auth("token?grant_type=refresh_token", {refresh_token:sess.refresh_token})); }
+      catch(e){ logout(true); throw new Error("Sesja wygasła. Zaloguj się ponownie."); }
+    }
+    return sess.access_token;
+  }
+  async function api(method, query, body){
+    const r = await fetch(SB_URL + "/rest/v1/sprawy" + (query||""), {method, headers:{
+      apikey:SB_KEY, Authorization:"Bearer " + await token(), "Content-Type":"application/json", Prefer:"return=representation"},
+      body: body ? JSON.stringify(body) : undefined});
+    const j = await r.json().catch(() => null);
+    if(r.status === 401){ logout(true); throw new Error("Sesja wygasła. Zaloguj się ponownie."); }
+    if(!r.ok) throw new Error((j && (j.message || j.hint)) || ("Błąd bazy " + r.status));
+    return j;
+  }
+
+  function view(){
+    const on = !!sess;
+    $("crmOff").hidden = !!SB_KEY;
+    $("crmLogin").hidden = !SB_KEY || on;
+    $("crmIn").hidden = !SB_KEY || !on;
+    if(on) $("crmUser").textContent = sess.email;
+    curInfo();
+  }
+  function show(){ $("crm").hidden = false; view(); }
+
+  const extra = () => ({telefon:$("crmTel").value.trim(), email:$("crmMail").value.trim(), status:$("crmStatus").value, notatka:$("crmNote").value.trim()});
+  const snap = () => JSON.stringify([F.getState(), extra()]);
+  const dirty = () => savedSnap !== null ? snap() !== savedSnap : !!$("owner").value.trim();
+
+  function curInfo(){
+    const c = cases.find(x => x.id === curId);
+    $("crmCur").textContent = c ? `Otwarta sprawa: ${c.klient || "bez nazwy"} (zapisana ${dt(c.zmieniono)})` : "Nowa sprawa, jeszcze niezapisana.";
+    document.querySelectorAll(".case").forEach(el => el.classList.toggle("on", el.dataset.id === curId));
+  }
+
+  function list(){
+    const q = $("crmSearch").value.trim().toLowerCase();
+    const box = $("crmList"); box.innerHTML = "";
+    const rows = cases.filter(c => !q || [c.klient,c.polozenie,c.dzialka,c.telefon,c.email,c.status,c.notatka].join(" ").toLowerCase().includes(q));
+    if(!rows.length){ const p = document.createElement("p"); p.className = "hint"; p.textContent = cases.length ? "Nic nie pasuje do wyszukiwania." : "Nie ma jeszcze zapisanych spraw."; box.appendChild(p); }
+    rows.forEach(c => {
+      const el = document.createElement("div"); el.className = "case"; el.dataset.id = c.id;
+      const left = document.createElement("div");
+      const b = document.createElement("b"); b.textContent = c.klient || "bez nazwy";
+      const meta = document.createElement("div"); meta.className = "meta";
+      meta.textContent = [c.polozenie, c.dzialka, c.telefon, c.status, dt(c.zmieniono)].filter(Boolean).join(" · ");
+      left.append(b, meta);
+      const amt = document.createElement("div"); amt.className = "amt"; amt.textContent = zl(c.kwota);
+      const acts = document.createElement("div"); acts.className = "acts";
+      const o = document.createElement("button"); o.type = "button"; o.textContent = "Otwórz"; o.onclick = () => open(c);
+      const d = document.createElement("button"); d.type = "button"; d.className = "del"; d.textContent = "Usuń"; d.onclick = () => del(c);
+      acts.append(o, d);
+      el.append(left, amt, acts); box.appendChild(el);
+    });
+    curInfo();
+  }
+
+  async function load(){
+    try{ cases = await api("GET", "?select=*&order=zmieniono.desc") || []; list(); }
+    catch(e){ msg(e.message, "err"); }
+  }
+
+  function fill(c){
+    F.setState(c ? (c.dane || {}) : F.initial);
+    $("crmTel").value = c ? c.telefon || "" : "";
+    $("crmMail").value = c ? c.email || "" : "";
+    $("crmStatus").value = c ? c.status || "Nowa" : "Nowa";
+    $("crmNote").value = c ? c.notatka || "" : "";
+    curId = c ? c.id : null;
+    savedSnap = c ? snap() : null;
+    curInfo();
+  }
+  function open(c){
+    if(c.id !== curId && dirty() && !confirm("Bieżąca sprawa ma niezapisane zmiany. Otworzyć inną mimo to?")) return;
+    fill(c); msg("");
+    try{ document.querySelector(".forms").scrollIntoView({behavior:"smooth"}); }catch(e){}
+  }
+  async function del(c){
+    if(!confirm(`Usunąć sprawę „${c.klient || "bez nazwy"}” na stałe?`)) return;
+    try{
+      await api("DELETE", "?id=eq." + encodeURIComponent(c.id));
+      cases = cases.filter(x => x.id !== c.id);
+      if(curId === c.id){ curId = null; savedSnap = null; }
+      list(); msg("Sprawa usunięta.", "ok");
+    }catch(e){ msg(e.message, "err"); }
+  }
+  async function save(){
+    const owner = $("owner").value.trim();
+    if(!owner){ msg("Wpisz imię i nazwisko klienta w polu Właściciel (krok 1).", "err"); $("owner").focus(); return; }
+    const L = window.__last || {};
+    const row = Object.assign({klient:owner, polozenie:$("place").value.trim(), dzialka:$("parcelId").value.trim(),
+      kwota:Math.round(L.total||0), ocena:$("pill").textContent, dane:F.getState()}, extra());
+    $("crmSave").disabled = true; msg("Zapisuję…");
+    try{
+      const r = curId ? await api("PATCH", "?id=eq." + encodeURIComponent(curId), row) : await api("POST", "", row);
+      const c = r && r[0];
+      if(!c) throw new Error("Nie udało się zapisać. Spróbuj ponownie.");
+      cases = [c].concat(cases.filter(x => x.id !== c.id));
+      curId = c.id; savedSnap = snap(); list();
+      msg("Zapisano: " + c.klient + ".", "ok");
+    }catch(e){ msg(e.message, "err"); }
+    $("crmSave").disabled = false;
+  }
+  function logout(silent){
+    const t = sess && sess.access_token;
+    if(t && !silent) fetch(SB_URL + "/auth/v1/logout", {method:"POST", headers:{apikey:SB_KEY, Authorization:"Bearer " + t}}).catch(() => {});
+    sess = null; store.set(null); cases = []; curId = null; savedSnap = null;
+    $("crmList").innerHTML = ""; view();
+  }
+
+  $("crmOpen").addEventListener("click", () => { show(); $("crm").scrollIntoView({behavior:"smooth"}); if(!sess && SB_KEY) $("crmEmail").focus(); });
+  $("crmHide").addEventListener("click", () => { $("crm").hidden = true; msg(""); });
+  $("crmLogin").addEventListener("submit", async e => {
+    e.preventDefault(); msg("Loguję…");
+    try{
+      keep(await auth("token?grant_type=password", {email:$("crmEmail").value.trim(), password:$("crmPass").value}));
+      $("crmPass").value = ""; msg(""); view(); load();
+    }catch(err){ msg(/invalid/i.test(err.message) ? "Nieprawidłowy e-mail lub hasło." : err.message, "err"); }
+  });
+  $("crmLogout").addEventListener("click", () => { logout(false); msg("Wylogowano.", "ok"); });
+  $("crmSave").addEventListener("click", save);
+  $("crmNew").addEventListener("click", () => {
+    if(dirty() && !confirm("Bieżąca sprawa ma niezapisane zmiany. Zacząć nową mimo to?")) return;
+    fill(null); msg(""); $("owner").focus();
+  });
+  $("crmSearch").addEventListener("input", list);
+  window.addEventListener("beforeunload", e => { if(sess && dirty()){ e.preventDefault(); e.returnValue = ""; } });
+
+  sess = SB_KEY ? store.get() : null;
+  if(sess || location.hash === "#baza") show();
+  if(sess) load();
 })();
 </script>
 
