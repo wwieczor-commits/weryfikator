@@ -11,7 +11,7 @@
 /* Układ: dwie kolumny – formularz po lewej, przyklejony panel wyniku po prawej; na telefonie jedna kolumna. Kolory i kroje marki MP Legal: granat i złoto. */
 :root{
   --bg:#f3f5f8; --panel:#ffffff; --fg:#182434; --muted:#5a6475; --line:#d9dee6;
-  --accent:#0f3c64; --accent-soft:#e3ebf3; --strip:#bb8e59; --strip-soft:#f5ecdf; --logo-t:#231f20; --onaccent:#ffffff;
+  --accent:#0f3c64; --accent-soft:#e3ebf3; --strip:#bb8e59; --strip-soft:#f5ecdf; --logo-t:#231f20; --onaccent:#ffffff; --c-power:#bb8e59; --c-gas:#d9822b; --c-water:#2f7789; --c-sewer:#7a5c45;
   --ok:#2e7d4f; --ok-soft:#dff1e6; --warn:#a86a00; --warn-soft:#fbefd3; --bad:#b3261e; --bad-soft:#f9dedb;
   --font-display:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -19,11 +19,11 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f1622; --panel:#16202e; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2a3647;
-  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622;
+  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622; --c-power:#d4ab7a; --c-gas:#f0a24f; --c-water:#5fb3c6; --c-sewer:#b48d6e;
   --ok:#6fcf97; --ok-soft:#1d3527; --warn:#f2c14e; --warn-soft:#3a3019; --bad:#ff8a80; --bad-soft:#3d1f1d; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f1622; --panel:#16202e; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2a3647;
-  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622;
+  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622; --c-power:#d4ab7a; --c-gas:#f0a24f; --c-water:#5fb3c6; --c-sewer:#b48d6e;
   --ok:#6fcf97; --ok-soft:#1d3527; --warn:#f2c14e; --warn-soft:#3a3019; --bad:#ff8a80; --bad-soft:#3d1f1d; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0}
@@ -113,6 +113,14 @@ tr.sum td:last-child{font-weight:500}
   table{font-size:13px}
   .note textarea{min-height:240px}
 }
+.devices{display:grid;gap:12px}
+.dev{border:1px solid var(--line);border-left:4px solid var(--c,var(--accent));border-radius:8px;padding:14px;display:grid;gap:12px;background:var(--bg)}
+.dev input,.dev select{background:var(--panel)}
+.devhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.devhead strong{font-family:var(--font-display);font-size:15px}
+.rm{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;font:inherit;font-size:13px;padding:4px 10px;cursor:pointer}
+.addbtn{justify-self:start;background:var(--panel);color:var(--accent);border:1.5px dashed var(--accent);border-radius:7px;font:inherit;font-weight:700;font-size:14px;padding:9px 16px;cursor:pointer}
+td .d{display:block;color:var(--muted);font-size:12px;white-space:normal}
 footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:grid;gap:6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -135,7 +143,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
   <div class="grid">
     <div class="forms">
       <p id="jsWarn" style="margin:0;padding:12px 14px;border-radius:7px;background:var(--bad-soft);color:var(--bad);font-weight:600">Ten podgląd nie uruchamia kalkulatora, więc wynik się nie przelicza. Otwórz plik w przeglądarce (Safari lub Chrome) albo przez link do strony.</p>
-      <p class="example">Formularz jest wypełniony przykładowymi danymi (działka budowlana z linią średniego napięcia). Wpisz dane swojej działki.</p>
+      <p class="example">Formularz jest wypełniony przykładowymi danymi (działka budowlana: linia średniego napięcia przez środek i wodociąg przy granicy). Wpisz dane swojej działki.</p>
 
       <section class="card" aria-labelledby="h-dz">
         <h2 id="h-dz"><span class="step">1</span>Działka</h2>
@@ -166,47 +174,20 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
       </section>
 
       <section class="card" aria-labelledby="h-inf">
-        <h2 id="h-inf"><span class="step">2</span>Infrastruktura na działce</h2>
-        <div class="row">
-          <label for="infra">Rodzaj urządzenia
-            <select id="infra">
-              <option value="nn">Linia niskiego napięcia 0,4 kV</option>
-              <option value="sn" selected>Linia średniego napięcia 15–30 kV</option>
-              <option value="wn">Linia wysokiego napięcia 110 kV</option>
-              <option value="nn220">Linia 220 kV</option>
-              <option value="nn400">Linia 400 kV</option>
-              <option value="kabel">Kabel ziemny (energetyczny / telekom.)</option>
-              <option value="gaz_w">Gazociąg wysokiego ciśnienia</option>
-              <option value="gaz_s">Gazociąg średniego / niskiego ciśnienia</option>
-              <option value="woda">Wodociąg / kanalizacja</option>
-            </select>
-          </label>
-          <label for="length">Długość odcinka na działce
-            <span class="unit"><input id="length" type="text" inputmode="decimal" autocomplete="off" value="40"><span>m</span></span>
-          </label>
-        </div>
-        <div class="row">
-          <label for="width">Szerokość pasa ochronnego (łącznie)
-            <span class="unit"><input id="width" type="text" inputmode="decimal" autocomplete="off" value="12"><span>m</span></span>
-            <span class="sub" id="widthHint">Typowo 10–15 m. Wartość ustawia się sama po wyborze rodzaju urządzenia.</span>
-          </label>
-          <label for="poles">Liczba słupów na działce
-            <input id="poles" type="text" inputmode="decimal" autocomplete="off" value="1">
-          </label>
-          <label for="poleArea">Teren zajęty przez jeden słup
-            <span class="unit"><input id="poleArea" type="text" inputmode="decimal" autocomplete="off" value="4"><span>m²</span></span>
-          </label>
-        </div>
+        <h2 id="h-inf"><span class="step">2</span>Urządzenia na działce</h2>
+        <p class="hint" id="infraHint">Dodaj wszystko, co przechodzi przez działkę.</p>
+        <div id="devices" class="devices"></div>
+        <button type="button" class="addbtn" id="addDev">+ Dodaj urządzenie</button>
       </section>
 
       <section class="card" aria-labelledby="h-zab">
         <h2 id="h-zab"><span class="step">3</span>Wpływ na zabudowę i użytkowanie</h2>
         <div class="row">
-          <label for="impact">Jak pas wpływa na zabudowę
+          <label for="impact">Czy w miejscu pasa można by budować
             <select id="impact">
-              <option value="0.75">Pas poza miejscem, gdzie można budować</option>
-              <option value="1">Ogranicza zabudowę (trzeba przesunąć budynek)</option>
-              <option value="1.25" selected>Wyklucza zabudowę w pasie</option>
+              <option value="0.75">Nie, tam i tak nie wolno budować</option>
+              <option value="1">Częściowo, trzeba przesunąć budynek</option>
+              <option value="1.25" selected>Tak, pas wyklucza zabudowę</option>
               <option value="1.15">Pas nad budynkiem lub przy nim (blokuje rozbudowę)</option>
             </select>
           </label>
@@ -214,16 +195,13 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
             <select id="rest">
               <option value="0">0% – reszta działki w pełni użyteczna</option>
               <option value="5">5% – drobne utrudnienia</option>
-              <option value="10" selected>10% – trudniej ustawić budynek</option>
-              <option value="20">20% – zostaje mało miejsca na budynek</option>
+              <option value="10">10% – trudniej ustawić budynek</option>
+              <option value="20" selected>20% – zostaje mało miejsca na budynek</option>
               <option value="30">30% – działka praktycznie niezabudowywalna</option>
             </select>
+            <span class="sub">Podpowiadany z położenia urządzeń: przez środek działki budowlanej szkodzi najbardziej, przy granicy najmniej.</span>
           </label>
         </div>
-        <label for="k">Stopień ograniczenia własności w pasie (współczynnik k)
-          <span class="kline"><input id="k" type="range" min="0.1" max="0.9" step="0.01" value="0.69"><output id="kOut" class="num">0,69</output></span>
-          <span class="sub">Ustawiany automatycznie z przeznaczenia gruntu i wpływu na zabudowę. Możesz go zmienić. <button type="button" class="linkbtn" id="kReset" hidden>Przywróć automatyczny</button></span>
-        </label>
         <div class="row">
           <label for="years">Okres bezumownego korzystania
             <span class="unit"><input id="years" type="text" inputmode="decimal" autocomplete="off" value="6"><span>lat</span></span>
@@ -270,15 +248,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
         <span class="big" id="total">–</span>
         <span class="range" id="range">–</span>
         <table>
-          <tbody>
-            <tr><td>Pas ochronny na działce</td><td id="rPas">–</td></tr>
-            <tr><td>Ograniczenie w pasie (k)</td><td id="rPasVal">–</td></tr>
-            <tr><td>Teren pod słupami (100%)</td><td id="rPole">–</td></tr>
-            <tr><td>Spadek wartości reszty działki</td><td id="rRest">–</td></tr>
-            <tr class="sum"><td>Wynagrodzenie za służebność przesyłu (jednorazowo)</td><td id="rServ">–</td></tr>
-            <tr><td>Bezumowne korzystanie – rocznie</td><td id="rYear">–</td></tr>
-            <tr class="sum"><td id="rBezLabel">Bezumowne korzystanie – 6 lat</td><td id="rBez">–</td></tr>
-          </tbody>
+          <tbody id="rows"></tbody>
         </table>
       </div>
 
@@ -289,8 +259,8 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
 
       <div class="sketch">
         <svg id="svg" viewBox="0 0 300 200" role="img" aria-label="Schemat działki z pasem ochronnym"></svg>
-        <div class="legend"><span><i style="background:var(--accent-soft);border:1.5px solid var(--accent)"></i>działka</span><span><i style="background:var(--strip-soft);border:1.5px solid var(--strip)"></i>pas ochronny</span><span><i style="background:var(--fg)"></i>słup</span></div>
-        <p class="small">Schemat poglądowy: działka narysowana jako kwadrat o podanej powierzchni, proporcje pasa zachowane.</p>
+        <div class="legend"><span><i style="background:var(--accent-soft);border:1.5px solid var(--accent)"></i>działka</span><span><i style="background:var(--c-power)"></i>energetyka</span><span><i style="background:var(--c-gas)"></i>gaz</span><span><i style="background:var(--c-water)"></i>wodociąg</span><span><i style="background:var(--c-sewer)"></i>kanalizacja</span><span><i style="background:var(--fg)"></i>słup / obiekt</span></div>
+        <p class="small">Schemat poglądowy: działka jako kwadrat o podanej powierzchni, pasy w skali i w wybranym położeniu.</p>
       </div>
 
       <div class="note">
@@ -310,7 +280,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
   <div class="mbar" aria-hidden="false"><div><span class="lbl">Szacunek roszczenia</span><span class="val" id="mTotal">–</span></div><a href="#wynik">Zobacz wynik</a></div>
 
   <footer>
-    <p>Jak liczymy: wynagrodzenie za służebność = cena × (pas bez słupów) × k + cena × teren pod słupami + spadek wartości reszty działki. Bezumowne korzystanie = roczna stopa × wartość ograniczenia w pasie i pod słupami × liczba lat. To dwa odrębne roszczenia (art. 305² oraz art. 224–225 Kodeksu cywilnego). Widełki to −25% / +30% od wartości środkowej.</p>
+    <p>Jak liczymy: dla każdego urządzenia wynagrodzenie = cena × (pas bez słupów i obiektów) × k + cena × teren pod słupami i obiektami. Współczynnik k zależy od przeznaczenia gruntu, możliwości zabudowy i położenia urządzenia (przez środek działki ×1,2, ukośnie ×1,05, przy granicy ×0,75). Do sumy dochodzi spadek wartości reszty działki. Bezumowne korzystanie = roczna stopa × wartość ograniczeń × liczba lat. To dwa odrębne roszczenia (art. 305² oraz art. 224–225 Kodeksu cywilnego). Widełki to −25% / +30% od wartości środkowej.</p>
     <p>Wynik jest orientacyjny i nie zastępuje operatu szacunkowego rzeczoznawcy ani porady prawnej. Szerokości pasów to wartości typowe; rzeczywiste wynikają z dokumentacji operatora, norm i miejscowego planu.</p>
     <p>Podstawa: wyrok Trybunału Konstytucyjnego z 2 grudnia 2025 r., sygn. P 10/16 (zasiedzenie służebności przesyłu za okres przed 3 sierpnia 2008 r.). Na dzień przygotowania kalkulatora wyrok nie był opublikowany w Dzienniku Ustaw.</p>
     <p style="margin-top:6px;color:var(--fg);opacity:.7">© 2026 Wojciech Wieczorek</p>
@@ -321,27 +291,116 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
 (function(){
   const $ = id => document.getElementById(id);
   try{ $("jsWarn").hidden = true; }catch(e){}
-  const INFRA = {
-    nn:{w:6,pole:1,hint:"Typowo 4–6 m."},
-    sn:{w:12,pole:4,hint:"Typowo 10–15 m."},
-    wn:{w:36,pole:40,hint:"Typowo 30–40 m."},
-    nn220:{w:50,pole:80,hint:"Typowo 50 m."},
-    nn400:{w:70,pole:120,hint:"Typowo 70–80 m."},
-    kabel:{w:2,pole:0,hint:"Typowo 1–2 m."},
-    gaz_w:{w:8,pole:0,hint:"Strefa kontrolowana typowo 4–12 m."},
-    gaz_s:{w:2,pole:0,hint:"Typowo 1–2 m."},
-    woda:{w:4,pole:0,hint:"Typowo 3–5 m."}
+
+  // typy urządzeń: szerokość pasa (m), obiekt naziemny (m²), domyślna liczba obiektów, grupa koloru
+  const TYPES = {
+    nn:{name:"Linia niskiego napięcia 0,4 kV", w:6, a:1, n:1, c:"power", obj:"Słupy", hint:"pas typowo 4–6 m"},
+    sn:{name:"Linia średniego napięcia 15–30 kV", w:12, a:4, n:1, c:"power", obj:"Słupy", hint:"pas typowo 10–15 m"},
+    wn:{name:"Linia wysokiego napięcia 110 kV", w:36, a:40, n:1, c:"power", obj:"Słupy", hint:"pas typowo 30–40 m"},
+    nn220:{name:"Linia 220 kV", w:50, a:80, n:1, c:"power", obj:"Słupy", hint:"pas typowo 50 m"},
+    nn400:{name:"Linia 400 kV", w:70, a:120, n:1, c:"power", obj:"Słupy", hint:"pas typowo 70–80 m"},
+    kabel:{name:"Kabel ziemny (energetyczny / telekom.)", w:2, a:1, n:0, c:"power", obj:"Złącza / szafki", hint:"pas typowo 1–2 m"},
+    gaz_w:{name:"Gazociąg wysokiego ciśnienia", w:8, a:2, n:0, c:"gas", obj:"Słupki, zasuwy, stacje", hint:"strefa kontrolowana typowo 4–12 m"},
+    gaz_s:{name:"Gazociąg średniego / niskiego ciśnienia", w:2, a:1, n:0, c:"gas", obj:"Słupki, zasuwy", hint:"strefa typowo 1–2 m"},
+    woda:{name:"Wodociąg", w:4, a:2, n:0, c:"water", obj:"Studzienki, hydranty", hint:"pas typowo 3–5 m, magistrala więcej"},
+    kanal:{name:"Kanalizacja", w:4, a:2, n:1, c:"sewer", obj:"Studzienki", hint:"pas typowo 3–5 m"}
+  };
+  const RURAL_OK = ["sn","wn","nn220","nn400","gaz_w","gaz_s","woda","kanal"];
+  const POS = {
+    srodek:{name:"Przez środek działki", m:1.2, rest:20},
+    ukos:{name:"Ukośnie / przez część działki", m:1.05, rest:10},
+    granica:{name:"Wzdłuż granicy działki", m:0.75, rest:5}
   };
   const KBASE = {rolna:.30, lesna:.30, bud_nz:.55, bud_z:.45, uslug:.60};
-  let kManual = false;
+  let restManual = false, uid = 0;
 
-  const zl = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v)) + " zł";
-  const m2 = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v)) + " m²";
-  const num = id => { const v = parseFloat(String($(id).value).replace(/\s/g,"").replace(",", ".")); return isFinite(v) && v > 0 ? v : 0; };
+  const fmt = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v));
+  const zl = v => fmt(v) + " zł";
+  const m2 = v => fmt(v) + " m²";
+  const parse = v => { const x = parseFloat(String(v).replace(/\s/g,"").replace(",", ".")); return isFinite(x) && x > 0 ? x : 0; };
+  const num = id => parse($(id).value);
+  const isRural = () => ["rolna","lesna"].includes($("landType").value);
+  const isBuild = () => ["bud_nz","bud_z","uslug"].includes($("landType").value);
 
-  function autoK(){
-    const k = Math.min(.9, KBASE[$("landType").value] * parseFloat($("impact").value));
-    return Math.round(k*100)/100;
+  function typeOptions(sel){
+    const allowed = isRural() ? RURAL_OK : Object.keys(TYPES);
+    return allowed.map(k => `<option value="${k}"${k===sel?" selected":""}>${TYPES[k].name}</option>`).join("");
+  }
+
+  function addDevice(d){
+    d = Object.assign({type:"sn", len:40, pos:"srodek"}, d||{});
+    const t = TYPES[d.type];
+    const id = "d" + (++uid);
+    const el = document.createElement("div");
+    el.className = "dev"; el.dataset.id = id;
+    el.innerHTML = `
+      <div class="devhead"><strong>Urządzenie</strong><button type="button" class="rm">Usuń</button></div>
+      <div class="row">
+        <label for="${id}t">Rodzaj<select id="${id}t" class="f-type">${typeOptions(d.type)}</select></label>
+        <label for="${id}p">Położenie na działce<select id="${id}p" class="f-pos">
+          ${Object.entries(POS).map(([k,v])=>`<option value="${k}"${k===d.pos?" selected":""}>${v.name}</option>`).join("")}
+        </select></label>
+      </div>
+      <div class="row">
+        <label for="${id}l">Długość na działce<span class="unit"><input id="${id}l" class="f-len" type="text" inputmode="decimal" autocomplete="off" value="${d.len}"><span>m</span></span></label>
+        <label for="${id}w">Szerokość pasa<span class="unit"><input id="${id}w" class="f-w" type="text" inputmode="decimal" autocomplete="off" value="${d.w ?? t.w}"><span>m</span></span><span class="sub f-hint">${t.hint}</span></label>
+      </div>
+      <div class="row">
+        <label for="${id}n"><span class="f-objname">${t.obj}</span> – liczba<input id="${id}n" class="f-n" type="text" inputmode="decimal" autocomplete="off" value="${d.n ?? t.n}"></label>
+        <label for="${id}a">Teren zajęty przez jeden<span class="unit"><input id="${id}a" class="f-a" type="text" inputmode="decimal" autocomplete="off" value="${d.a ?? t.a}"><span>m²</span></span></label>
+      </div>`;
+    el.style.setProperty("--c", `var(--c-${t.c})`);
+    $("devices").appendChild(el);
+    el.querySelector(".rm").addEventListener("click", () => { el.remove(); refreshRemove(); calc(); });
+    el.querySelector(".f-type").addEventListener("change", e => applyType(el, e.target.value));
+    el.addEventListener("input", calc);
+    el.addEventListener("change", e => { if(!e.target.classList.contains("f-type")) calc(); });
+    refreshRemove();
+  }
+
+  function applyType(el, type){
+    const t = TYPES[type];
+    el.querySelector(".f-w").value = t.w;
+    el.querySelector(".f-a").value = t.a;
+    el.querySelector(".f-n").value = t.n;
+    el.querySelector(".f-hint").textContent = t.hint;
+    el.querySelector(".f-objname").textContent = t.obj;
+    el.style.setProperty("--c", `var(--c-${t.c})`);
+    calc();
+  }
+
+  function refreshRemove(){
+    const devs = document.querySelectorAll(".dev");
+    devs.forEach((d,i) => {
+      d.querySelector(".rm").hidden = devs.length < 2;
+      d.querySelector(".devhead strong").textContent = "Urządzenie " + (i+1);
+    });
+  }
+
+  function refreshTypeLists(){
+    document.querySelectorAll(".dev").forEach(el => {
+      const sel = el.querySelector(".f-type");
+      let cur = sel.value;
+      if(isRural() && !RURAL_OK.includes(cur)){ cur = "sn"; sel.innerHTML = typeOptions(cur); applyType(el, cur); }
+      else sel.innerHTML = typeOptions(cur);
+    });
+    $("infraHint").textContent = isRural()
+      ? "Na gruntach rolnych i leśnych roszczenie ma sens głównie przy liniach średniego i wysokiego napięcia oraz przy gazociągach, wodociągach i kanalizacji. Linie niskiego napięcia dają tu zbyt małe kwoty."
+      : "Dodaj wszystko, co przechodzi przez działkę: linie energetyczne, gazociąg, wodociąg, kanalizację. Każde urządzenie liczy się osobno.";
+  }
+
+  function readDevices(){
+    return [...document.querySelectorAll(".dev")].map(el => {
+      const type = el.querySelector(".f-type").value;
+      return {
+        type, t:TYPES[type],
+        pos: el.querySelector(".f-pos").value,
+        len: parse(el.querySelector(".f-len").value),
+        w: parse(el.querySelector(".f-w").value),
+        n: Math.floor(parse(el.querySelector(".f-n").value)),
+        a: parse(el.querySelector(".f-a").value)
+      };
+    });
   }
 
   function verdict(){
@@ -364,8 +423,8 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     else if(v("usuc")==="unk"){ down("warn"); reasons.push("Sprawdź, czy operator nie uzyskał wcześniej postanowienia o zasiedzeniu."); }
 
     const b = v("built");
-    if(b==="prl" || b==="pre08") reasons.push("Urządzenie sprzed 3.08.2008 r. Wyrok TK z 2.12.2025 r. podważył nieodpłatne zasiedzenie za ten okres.");
-    else if(b==="post08") reasons.push("Urządzenie po 2008 r. Okres potrzebny do zasiedzenia jeszcze nie upłynął, więc operator raczej nie obroni się zasiedzeniem.");
+    if(b==="prl" || b==="pre08") reasons.push("Urządzenia sprzed 3.08.2008 r. Wyrok TK z 2.12.2025 r. podważył nieodpłatne zasiedzenie za ten okres.");
+    else if(b==="post08") reasons.push("Urządzenia po 2008 r. Okres potrzebny do zasiedzenia jeszcze nie upłynął, więc operator raczej nie obroni się zasiedzeniem.");
     else { down("warn"); reasons.push("Ustal rok budowy (operator, archiwum gminy, starostwo)."); }
 
     const pill = $("pill");
@@ -376,58 +435,80 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     return pill.textContent;
   }
 
-  function sketch(P, Ppas, L, w, n){
-    const svg = $("svg");
+  function sketch(P, devs){
     const side = Math.sqrt(P || 1);
     const box = 170, ox = 65, oy = 15, s = box/side;
-    const len = Math.min(L, side*1.41);
-    const horiz = Math.min(len, side);
-    const sw = Math.max(2, Math.min(box, w*s));
-    const sy = oy + box/2 - sw/2;
-    const sx = ox + (box - horiz*s)/2;
-    let poles = "";
-    for(let i=0;i<n && i<12;i++){
-      const px = sx + (horiz*s)*((i+1)/(Math.min(n,12)+1));
-      poles += `<rect x="${px-3.5}" y="${oy+box/2-3.5}" width="7" height="7" fill="var(--fg)"/>`;
-    }
-    svg.innerHTML =
+    let g = "";
+    const counts = {srodek:0, ukos:0, granica:0};
+    devs.forEach(d => {
+      if(!d.len || !d.w) return;
+      const col = `var(--c-${d.t.c})`;
+      const sw = Math.max(3, Math.min(box, d.w*s));
+      const k = counts[d.pos]++;
+      if(d.pos === "ukos"){
+        const L = Math.min(d.len, side*1.414)*s;
+        const cx = ox+box/2, cy = oy+box/2 + k*sw*1.1;
+        g += `<g transform="rotate(-35 ${cx} ${cy})"><rect x="${cx-L/2}" y="${cy-sw/2}" width="${L}" height="${sw}" fill="${col}" fill-opacity=".32" stroke="${col}" stroke-width="1.2"/>`;
+        g += `<line x1="${cx-L/2}" y1="${cy}" x2="${cx+L/2}" y2="${cy}" stroke="${col}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+        for(let i=0;i<Math.min(d.n,10);i++){ const px = cx-L/2 + L*(i+1)/(Math.min(d.n,10)+1); g += `<rect x="${px-3.5}" y="${cy-3.5}" width="7" height="7" fill="var(--fg)"/>`; }
+        g += `</g>`;
+      } else {
+        const L = Math.min(d.len, side)*s;
+        const x = ox + (box-L)/2;
+        const y = d.pos === "srodek" ? oy + box/2 - sw/2 + k*(sw+4) : oy + k*(sw+2);
+        g += `<rect x="${x}" y="${y}" width="${L}" height="${sw}" fill="${col}" fill-opacity=".32" stroke="${col}" stroke-width="1.2"/>`;
+        g += `<line x1="${x}" y1="${y+sw/2}" x2="${x+L}" y2="${y+sw/2}" stroke="${col}" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+        for(let i=0;i<Math.min(d.n,10);i++){ const px = x + L*(i+1)/(Math.min(d.n,10)+1); g += `<rect x="${px-3.5}" y="${y+sw/2-3.5}" width="7" height="7" fill="var(--fg)"/>`; }
+      }
+    });
+    $("svg").innerHTML =
       `<defs><clipPath id="clipP"><rect x="${ox}" y="${oy}" width="${box}" height="${box}"/></clipPath></defs>`+
-      `<rect x="${ox}" y="${oy}" width="${box}" height="${box}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>`+
-      `<g clip-path="url(#clipP)"><rect x="${sx}" y="${sy}" width="${horiz*s}" height="${sw}" fill="var(--strip-soft)" stroke="var(--strip)" stroke-width="1.5"/>`+
-      `<line x1="${sx}" y1="${oy+box/2}" x2="${sx+horiz*s}" y2="${oy+box/2}" stroke="var(--strip)" stroke-width="1.5" stroke-dasharray="5 4"/>${poles}</g>`+
-      `<text x="${ox+box/2}" y="${oy+box+0}" dy="-6" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${Math.round(side)} m</text>`+
-      `<text x="${ox+box+8}" y="${oy+box/2+4}" font-size="11" fill="var(--fg)" font-family="IBM Plex Mono, monospace">pas ${w} m</text>`+
-      `<text x="${ox-8}" y="${oy+14}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${P? Math.round(Ppas/P*100):0}%</text>`+
-      `<text x="${ox-8}" y="${oy+28}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="Open Sans, sans-serif">w pasie</text>`;
+      `<rect x="${ox}" y="${oy}" width="${box}" height="${box}" fill="var(--accent-soft)"/>`+
+      `<g clip-path="url(#clipP)">${g}</g>`+
+      `<rect x="${ox}" y="${oy}" width="${box}" height="${box}" fill="none" stroke="var(--accent)" stroke-width="2"/>`+
+      `<text x="${ox+box/2}" y="${oy+box}" dy="14" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${Math.round(side)} m</text>`;
   }
 
   function calc(){
-    const P = num("area"), W = num("price"), L = num("length"), w = num("width");
-    const n = Math.floor(num("poles")), aS = num("poleArea");
-    if(!kManual){ $("k").value = autoK(); }
-    const k = parseFloat($("k").value);
-    $("kOut").textContent = k.toFixed(2).replace(".",",");
-    $("kReset").hidden = !kManual;
+    const P = num("area"), W = num("price");
+    const devs = readDevices();
+    const base = KBASE[$("landType").value] * parseFloat($("impact").value);
 
-    const Ppas = Math.min(L*w, P);
-    const Pslup = Math.min(n*aS, Ppas);
-    const pasVal = W*(Ppas-Pslup)*k;
-    const poleVal = W*Pslup;
-    const restVal = W*Math.max(0,P-Ppas)*(parseFloat($("rest").value)/100);
-    const serv = pasVal + poleVal + restVal;
+    // podpowiedź spadku wartości reszty działki
+    if(!restManual){
+      let r = 0;
+      if(isBuild() && devs.length){ r = Math.max(...devs.map(d => POS[d.pos].rest)); }
+      if($("landType").value === "bud_z") r = Math.min(r, 10);
+      $("rest").value = String(r);
+    }
+
+    let sumPas = devs.reduce((a,d) => a + d.len*d.w, 0);
+    const scale = sumPas > P && sumPas > 0 ? P/sumPas : 1;  // pasy nie mogą przekroczyć działki
+    let rowsHtml = "", valSum = 0, pasTotal = 0;
+    devs.forEach(d => {
+      const pas = d.len*d.w*scale;
+      const obj = Math.min(d.n*d.a, pas);
+      const k = Math.min(.9, base * POS[d.pos].m);
+      const val = W*(pas-obj)*k + W*obj;
+      d.pas = pas; d.k = k; d.val = val;
+      valSum += val; pasTotal += pas;
+      rowsHtml += `<tr><td>${d.t.name}<span class="d">${fmt(d.len)} m, ${POS[d.pos].name.toLowerCase()}, pas ${m2(pas)}, k ${k.toFixed(2).replace(".",",")}</span></td><td>${zl(val)}</td></tr>`;
+    });
+    const restPct = parseFloat($("rest").value)/100;
+    const restVal = W*Math.max(0,P-pasTotal)*restPct;
+    const serv = valSum + restVal;
     const years = Math.min(6, Math.max(0, Math.floor(num("years"))));
-    const yearly = (pasVal + poleVal) * (num("rate")/100);
-    const bez = yearly * years;
+    const yearly = valSum * (num("rate")/100);
+    const bez = yearly*years;
     const total = serv + bez;
+    const yl = years===1?" rok":(years>=2&&years<=4?" lata":" lat");
 
-    $("rPas").textContent = m2(Ppas);
-    $("rPasVal").textContent = zl(pasVal);
-    $("rPole").textContent = zl(poleVal);
-    $("rRest").textContent = zl(restVal);
-    $("rServ").textContent = zl(serv);
-    $("rYear").textContent = zl(yearly);
-    $("rBezLabel").textContent = "Bezumowne korzystanie – " + years + (years===1?" rok":(years>=2&&years<=4?" lata":" lat"));
-    $("rBez").textContent = zl(bez);
+    rowsHtml += `<tr><td>Spadek wartości reszty działki<span class="d">${Math.round(restPct*100)}% z ${m2(Math.max(0,P-pasTotal))}</span></td><td>${zl(restVal)}</td></tr>`;
+    rowsHtml += `<tr class="sum"><td>Wynagrodzenie za służebność przesyłu (jednorazowo)</td><td>${zl(serv)}</td></tr>`;
+    rowsHtml += `<tr><td>Bezumowne korzystanie – rocznie</td><td>${zl(yearly)}</td></tr>`;
+    rowsHtml += `<tr class="sum"><td>Bezumowne korzystanie – ${years}${yl}</td><td>${zl(bez)}</td></tr>`;
+    $("rows").innerHTML = rowsHtml;
+
     $("total").textContent = zl(total);
     $("range").textContent = "widełki: " + zl(total*.75) + " – " + zl(total*1.3);
     $("chipTotal").textContent = zl(total);
@@ -439,20 +520,19 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     if(id) $("geoLink").href = geo;
 
     const ocena = verdict();
-    sketch(P, Ppas, L, w, n);
+    sketch(P, devs);
 
-    const infraTxt = $("infra").options[$("infra").selectedIndex].text;
     const landTxt = $("landType").options[$("landType").selectedIndex].text;
     $("noteText").value =
-`Wstępna ocena roszczenia za urządzenie przesyłowe na działce${id ? " " + id : ""}
+`Wstępna ocena roszczenia za urządzenia przesyłowe na działce${id ? " " + id : ""}
 
 - Przeznaczenie: ${landTxt}, powierzchnia ${m2(P)}, cena gruntu ${W} zł/m²
-- Urządzenie: ${infraTxt}, ${L} m na działce, pas ochronny ${w} m, słupy: ${n}
-- Pas zajmuje ${m2(Ppas)} (${P?Math.round(Ppas/P*100):0}% działki)
+${devs.map(d => `- ${d.t.name}: ${fmt(d.len)} m, ${POS[d.pos].name.toLowerCase()}, pas ${d.w} m (${m2(d.pas)}), ${d.t.obj.toLowerCase()}: ${d.n}`).join("\n")}
+- Pasy zajmują łącznie ${m2(pasTotal)} (${P?Math.round(pasTotal/P*100):0}% działki)
 
 Szacunek:
 - wynagrodzenie za ustanowienie służebności przesyłu: ok. ${zl(serv)}
-- wynagrodzenie za bezumowne korzystanie (${years} lat): ok. ${zl(bez)}
+- wynagrodzenie za bezumowne korzystanie (${years}${yl}): ok. ${zl(bez)}
 - razem: ok. ${zl(total)} (widełki ${zl(total*.75)} – ${zl(total*1.3)})
 
 Ocena podstaw roszczenia: ${ocena}
@@ -460,27 +540,25 @@ Ocena podstaw roszczenia: ${ocena}
 Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w operacie szacunkowym.${geo ? "\nDziałka w Geoportalu: " + geo : ""}`;
   }
 
-  $("infra").addEventListener("change", () => {
-    const d = INFRA[$("infra").value];
-    $("width").value = d.w; $("poleArea").value = d.pole;
-    if(d.pole === 0) $("poles").value = 0;
-    $("widthHint").textContent = d.hint + " Wartość ustawia się sama po wyborze rodzaju urządzenia.";
+  $("addDev").addEventListener("click", () => {
+    addDevice({type: isRural() ? "sn" : "woda", len: 30, pos: "granica"});
     calc();
   });
-  $("k").addEventListener("input", () => { kManual = true; calc(); });
-  $("kReset").addEventListener("click", () => { kManual = false; calc(); });
-  ["landType","impact"].forEach(id => $(id).addEventListener("change", () => { kManual = false; calc(); }));
-  document.querySelectorAll("input:not(#k),select").forEach(el => {
-    if(el.id==="infra"||el.id==="landType"||el.id==="impact") return;
-    el.addEventListener("input", calc); el.addEventListener("change", calc);
+  $("landType").addEventListener("change", () => { restManual = false; refreshTypeLists(); calc(); });
+  $("rest").addEventListener("change", () => { restManual = true; calc(); });
+  ["parcelId","area","price","impact","years","rate","built","contract","decision","paid","usuc"].forEach(id => {
+    $(id).addEventListener("input", calc); $(id).addEventListener("change", calc);
   });
   $("copyBtn").addEventListener("click", () => {
     const t = $("noteText");
     const done = () => { $("copyBtn").textContent = "Skopiowano"; setTimeout(()=>$("copyBtn").textContent="Kopiuj tekst",1800); };
-    try{
-      navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); });
-    }catch(e){ t.select(); }
+    try{ navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); }); }catch(e){ t.select(); }
   });
+
+  // przykład startowy
+  addDevice({type:"sn", len:40, pos:"srodek"});
+  addDevice({type:"woda", len:30, pos:"granica"});
+  refreshTypeLists();
   calc();
 })();
 </script>
