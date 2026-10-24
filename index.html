@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weryfikator roszczenia przesyłowego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Układ: dwie kolumny – formularz po lewej, przyklejony panel wyniku po prawej; na telefonie jedna kolumna. Kolory i kroje marki MP Legal: granat i złoto. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --fg:#182434; --muted:#5a6475; --line:#d9dee6;
+  --accent:#0f3c64; --accent-soft:#e3ebf3; --strip:#bb8e59; --strip-soft:#f5ecdf; --logo-t:#231f20; --onaccent:#ffffff;
+  --ok:#2e7d4f; --ok-soft:#dff1e6; --warn:#a86a00; --warn-soft:#fbefd3; --bad:#b3261e; --bad-soft:#f9dedb;
+  --font-display:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1622; --panel:#16202e; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2a3647;
+  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622;
+  --ok:#6fcf97; --ok-soft:#1d3527; --warn:#f2c14e; --warn-soft:#3a3019; --bad:#ff8a80; --bad-soft:#3d1f1d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1622; --panel:#16202e; --fg:#e7ecf3; --muted:#9aa6b8; --line:#2a3647;
+  --accent:#8db8e0; --accent-soft:#1c2c40; --strip:#d4ab7a; --strip-soft:#352a1d; --logo-t:#e7ecf3; --onaccent:#0f1622;
+  --ok:#6fcf97; --ok-soft:#1d3527; --warn:#f2c14e; --warn-soft:#3a3019; --bad:#ff8a80; --bad-soft:#3d1f1d; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;margin-bottom:22px}
+h1{font-family:var(--font-display);font-weight:800;color:var(--accent);font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.2px}
+header .brand{display:grid;gap:14px}
+.logo{display:flex;flex-wrap:wrap;align-items:end;gap:6px 14px}
+.logo svg{height:44px;width:auto;max-width:100%}
+.logo .t{fill:var(--logo-t)} .logo .n{fill:var(--accent)} .logo .g{fill:var(--strip)}
+.logo span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-bottom:4px}
+.contact{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:4px;font-size:14px;color:var(--fg)}
+.contact strong{font-family:var(--font-display)}
+.author{margin:4px 0 0;font-size:13px;font-weight:400;letter-spacing:.06em;color:var(--muted);opacity:.75}
+.lead{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.chip{font-family:var(--font-mono);font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;white-space:nowrap}
+.chip b{color:var(--accent);font-weight:500}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 20px 22px;display:grid;gap:16px}
+.forms{display:grid;gap:18px}
+h2{font-family:var(--font-display);font-weight:600;font-size:21px;margin:0;display:flex;gap:10px;align-items:baseline}
+h2 .step{font-family:var(--font-mono);font-size:13px;color:var(--accent);font-weight:500}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+label{display:grid;gap:5px;font-size:14px;font-weight:600}
+label .sub{font-weight:400;color:var(--muted);font-size:13px}
+input,select{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:9px 10px;width:100%;min-width:0}
+input[inputmode=decimal],.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=range]{padding:0;accent-color:var(--accent);background:transparent;border:0}
+.unit{position:relative}
+.unit input{padding-right:52px}
+.unit span{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-family:var(--font-mono);font-size:13px;pointer-events:none}
+.kline{display:flex;gap:12px;align-items:center}
+.kline output{font-family:var(--font-mono);min-width:3.5em;text-align:right}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+a{color:var(--accent)}
+/* panel wyniku */
+.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:grid;gap:16px}
+@media (max-width:900px){.result{position:static}}
+.total{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:10px}
+.total .label{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.total .big{font-family:var(--font-display);font-weight:700;font-size:clamp(34px,5vw,46px);line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.total .range{font-family:var(--font-mono);font-size:14px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+tr.sum td{font-weight:700;border-top:2px solid var(--fg)}
+tr.sum td:last-child{font-weight:500}
+.verdict{border-radius:10px;padding:16px 18px;display:grid;gap:8px;border:1px solid var(--line);background:var(--panel)}
+.pill{justify-self:start;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.verdict ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px}
+.sketch{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px}
+.sketch svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.note textarea{font:inherit;font-size:14px;width:100%;min-height:200px;resize:vertical;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:10px}
+.btn{justify-self:start;font:inherit;font-weight:600;font-size:14px;background:var(--accent);color:var(--onaccent);border:0;border-radius:7px;padding:9px 16px;cursor:pointer}
+.small{font-size:13px;color:var(--muted);margin:0}
+.example{font-size:13px;background:var(--strip-soft);color:var(--fg);border-radius:7px;padding:8px 12px;margin:0}
+/* telefon */
+.mbar{display:none}
+@media (max-width:900px){
+  .chip{display:none}
+  .wrap{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  section.card{padding:16px}
+  .result{scroll-margin-top:12px}
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--accent);color:var(--onaccent);
+    padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+    box-shadow:0 -4px 16px rgba(0,0,0,.18)}
+  .mbar .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.85;display:block}
+  .mbar .val{font-family:var(--font-display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+  .mbar a{color:var(--onaccent);font-weight:700;font-size:14px;border:1.5px solid currentColor;border-radius:7px;padding:8px 12px;text-decoration:none;white-space:nowrap}
+}
+@media (max-width:420px){
+  .logo svg{height:36px}
+  table{font-size:13px}
+  .note textarea{min-height:240px}
+}
+footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 397 62" role="img" aria-label="MP Legal"><title>MP Legal</title><path class="t" d="M109.4,46c1.1,-1.2 9.3,-20.7 9.9,-21.7c0.6,-1.1 9.4,-20.3 9.7,-21.9c0.2,-0.9 1.1,-1 1.9,-1c10.8,0 13.6,-0.2 14.5,-0.2c0.4,0 0.5,0.2 0.5,0.6l-0,1.9c-0,0.5 -0.1,0.7 -0.7,0.7l-3.6,0c-2.4,0 -2.7,1.5 -2.7,3.3c-0,2.4 -0.2,14 -0.2,19.5l-0,5.7c-0,4.1 0.2,17.3 0.2,18.9c-0,3.1 0.7,4.4 2.8,4.4l4.8,0c0.5,0 0.6,0.2 0.6,0.6l-0,1.9c-0,0.5 -0.1,0.7 -0.7,0.7c-1,0 -2.4,-0.2 -11.4,-0.2c-7.5,0 -10.7,0.2 -11.7,0.2c-0.6,0 -0.7,-0.2 -0.7,-0.7l-0,-1.9c-0,-0.4 0.1,-0.6 0.7,-0.6l5.5,0c1.4,0 2.1,-0.5 2.3,-2.9c0.1,-1 0.2,-15.1 0.2,-21.2l-0,-5.2c-0,-5.4 -0,-19.9 -0.2,-20.6l-0.2,0c-0.8,1.1 -12.4,26.7 -12.8,27.5c-0.5,1 -9.5,21.7 -9.8,22.5c-0.3,0.7 -1,2 -1.6,2c-0.5,0 -0.9,-0.7 -1.2,-1.5c-0.2,-0.6 -10.7,-26.3 -11.1,-27.3c-1.5,-3.7 -9,-22 -10.1,-23c-0.3,1.1 -0.5,21.7 -0.5,22.7c-0,1 -0.1,18.2 0.2,21c0.4,4.6 1.1,5.9 3.7,5.9l4.1,0c0.5,0 0.6,0.2 0.6,0.6l-0,2c-0,0.3 -0.1,0.6 -0.7,0.6c-0.9,0 -3.1,-0.2 -9.8,-0.2c-6.9,0 -9.8,0.2 -10.5,0.2c-0.7,0 -0.7,-0.1 -0.7,-0.7l-0,-2c-0,-0.2 0.1,-0.5 0.5,-0.5l4.3,0c3.1,0 3.8,-2.1 4.3,-4.9c1,-5.8 1.2,-26.6 1.2,-28.1c-0,-1.1 -0,-13.4 -0.1,-15.8c-0.1,-1.9 -0,-3 -3.3,-3l-5,0c-0.5,0 -0.6,-0.2 -0.6,-0.6l-0,-2.1c-0,-0.2 0.1,-0.5 0.6,-0.5c0.8,0 3,0.2 9.9,0.2c3.8,0 5.9,-0.2 6.9,-0.2c1.2,0 1.7,0.3 2.1,1.4l18.1,43.5Z"/><path class="t" d="M167.9,30.3c1.6,0.5 4.3,0.7 7.5,0.7c5,0 9.4,-2.7 11.5,-5.5c1.8,-2.4 2.1,-5.4 2.1,-8.2c-0,-10.7 -9.9,-13.5 -14.7,-13.5c-1.4,0 -4.7,0 -6.3,0.6l-0,26Zm-0,7.2c-0,3.8 0.1,14.9 0.2,16c0.2,1.8 1,2.6 2.7,2.6l5.2,0c0.6,0 0.7,0.2 0.7,0.6l-0,2c-0,0.4 -0.1,0.7 -0.7,0.7c-1.1,0 -3.7,-0.2 -11.3,-0.2c-7.2,0 -10.3,0.2 -11.2,0.2c-0.6,0 -0.7,-0.2 -0.7,-0.6l-0,-2c-0,-0.4 0.1,-0.6 0.5,-0.6l3.5,0c2.8,0 3.3,-0.4 3.6,-2.6c0.1,-0.8 0.3,-13.5 0.3,-23l-0,-9.4c-0,-5.4 -0.1,-14.2 -0.2,-15.1c-0.2,-1.6 -1,-1.8 -3.2,-1.8l-4.6,0c-0.4,0 -0.5,-0.2 -0.5,-0.7l-0,-2c-0,-0.4 0.1,-0.6 0.5,-0.6c0.9,0 3.8,0.2 11.6,0.2c1.5,0 6.3,-0.2 9,-0.2c9.2,0 13.5,0.9 18.2,4.1c3.8,2.6 6.2,7.2 6.2,11.8c-0,10.3 -7.7,16.6 -20.7,16.6c-3,0 -6.3,-0.1 -8.9,-0.4l-0,4.2Z"/><path class="t" d="M223,22.6c-0,-5.2 -0.2,-13.8 -0.2,-15.3c-0.2,-2.1 -0.6,-2.9 -3,-2.9l-3.8,-0c-0.5,-0 -0.6,-0.4 -0.6,-0.8l-0,-1.8c-0,-0.4 0.1,-0.6 0.6,-0.6c0.9,-0 3.8,0.2 10.6,0.2c7.9,-0 11.3,-0.2 12,-0.2c0.7,-0 0.7,0.2 0.7,0.7l-0,1.9c-0,0.4 -0.2,0.7 -0.8,0.7l-4.9,-0c-2.5,-0 -2.8,0.8 -2.8,3.2c-0,1.1 -0.2,13.4 -0.2,19l-0,7c-0,1.4 -0,19 0.2,22.3c1.8,0.2 17.9,0.3 20.4,-0c4.8,-0.7 9.7,-10.5 10.8,-13.7c0.2,-0.3 0.3,-0.5 0.7,-0.3l1.3,0.5c0.2,0.2 0.2,0.2 0.2,0.7c-0.2,0.6 -3.5,14 -4,16.2c-1.1,-0.1 -7.4,-0.2 -14.7,-0.2c-7.2,-0.1 -15.2,-0.1 -19.6,-0.1c-3.2,-0 -5.5,0.1 -7.2,0.1c-1.6,0.1 -2.6,0.2 -3.2,0.2c-0.6,-0 -0.7,-0.2 -0.7,-0.6l-0,-2c-0,-0.4 0.1,-0.6 0.6,-0.6l3.9,-0c3,-0 3.5,-1.1 3.5,-2.2c-0,-1.5 0.2,-21.8 0.2,-26.8l-0,-4.6Z"/><path class="t" d="M289.8,35c1.5,-0 2.2,-0.4 2.2,-1.1c0,-1.9 -1,-7.2 -6.3,-7.2c-3.6,-0 -7,2.4 -8.5,8.4l12.6,-0Zm-12.9,2.4c-0.2,0.7 -0.2,2 -0.2,3.9c0,8 5,14 11.6,14c5,-0 8.5,-2.8 9.9,-5.5c0.2,-0.3 0.5,-0.5 0.7,-0.4l1.1,0.6c0.2,0.1 0.4,0.3 0,1.2c-1.5,3.3 -5.7,8.9 -12.9,8.9c-4.6,-0 -9.8,-1.4 -12.8,-5.8c-2.8,-4.2 -3.6,-7.2 -3.6,-12.9c0,-3.2 0.8,-8.6 5.1,-12.9c3.5,-3.6 7.6,-4.3 11.6,-4.3c9.4,-0 12,8.8 12,12c0,1.1 -1,1.3 -2.3,1.3l-20.1,-0Z"/><path class="t" d="M326.8,35.5c-0,-3.6 -0.7,-5.7 -2.2,-7.3c-1.1,-1.1 -2.7,-1.8 -3.9,-1.8c-1.9,0 -3.8,0.3 -5.8,2.3c-2.6,2.8 -2.9,6.5 -2.9,9.6c-0,2.8 0.9,5.3 2.6,7.1c1.5,1.4 2.9,2 4.9,2c5.5,0 7.3,-6.8 7.3,-11.9m7.6,34.7c-0,-4.8 -3.7,-8.5 -11.8,-7.9l-7.8,0.6c-2.5,0.7 -6.5,3.4 -6.5,7.8c-0,2 1.5,4.5 3.2,5.6c2.7,1.9 5.6,2.3 11.4,2.3c3,0 12,-2.1 11.6,-8.4m-26.9,8.4c-2.9,-1.8 -4.2,-3.9 -4.2,-6.6c-0,-4.6 4.6,-8.1 8.5,-9.8l-0,-0.3c-3.4,-0.7 -5.5,-3.3 -5.5,-5.7c-0,-3.9 4.5,-6.7 7.3,-7.7l-0,-0.2c-3.2,-1.4 -7.6,-5.1 -7.6,-12.4c-0,-5.3 4.7,-11.8 13.9,-11.8c6.2,0 9.4,3.7 10.3,4.7c2.2,-1.5 5,-3.2 7.7,-3.2c2.7,0 4,1.8 3.8,3.4c-0,1.5 -1.3,3 -3.2,3c-1.4,0 -2.2,-0.7 -2.8,-1.2c-0.5,-0.3 -1.1,-0.7 -1.7,-0.7c-0.6,0 -1.5,0 -2.6,0.5c0.7,1.6 1.2,3.4 1.2,6.2c-0,3.2 -0.9,6.3 -3,8.8c-2.1,2.4 -6.8,4.1 -9.4,4.1c-1.8,0 -2.9,-0.1 -4.2,-0.4c-1.6,0.7 -4.3,2.3 -4.3,4.6c-0,3.3 4.1,3.1 9.5,2.8c6.7,-0.3 10.7,0.4 14,2.9c3.5,2.6 3.9,5.9 4,7.8c-0,3.8 -1.4,7 -5.5,10c-2.1,1.5 -7,3.8 -13.9,3.8c-3.9,0 -8.5,-0.4 -12.5,-2.6"/><path class="t" d="M363.1,41.1c-2.9,2.2 -10.9,3.8 -10.9,10.6c-0,3 1.8,4.5 4.2,4.5c2.4,-0 6.7,-2.8 6.7,-5l-0,-10Zm5.9,8.2c-0,4.6 1,6.1 2.4,6.1c1.3,-0 2.4,-0.7 2.8,-1.2c0.3,-0.4 0.5,-0.6 0.8,-0.3l0.8,0.7c0.2,0.2 0.4,0.7 -0.1,1.5c-0.7,1.2 -2.2,4 -6.3,4c-2.9,-0 -5,-2.1 -5.8,-5.5l-0.2,-0c-1.7,2 -4.4,3.7 -8.1,5c-1.5,0.5 -3,0.5 -4.8,0.5c-2,-0 -4.9,-1.6 -4.9,-6.8c-0,-3.7 1.7,-7 8.1,-9.8c3.7,-1.6 7.9,-3.6 9.2,-4.7l-0,-5.2c-0.2,-1.4 -0.2,-3.5 -1.1,-4.6c-0.9,-1.1 -2.5,-1.8 -4.9,-1.8c-1.6,-0 -4.2,0.7 -5.3,1.7c-1.1,1.1 -0.4,2.3 -0.4,3.7c-0,2.8 -1,4.6 -4.3,4.6c-1.3,-0 -2,-0.7 -2,-2.6c-0,-2.6 2.3,-5.7 5.6,-7.7c3.4,-2 6.3,-2.8 9.9,-2.8c3.8,-0 5.4,1.1 6.5,2.2c1.7,1.7 1.8,3.6 1.8,5.8l-0,17.3Z"/><path class="t" d="M390.1,34.8c-0,4.2 -0,16.5 0.1,19.1c0.1,1.4 0.4,2.5 2.1,2.5l3.7,-0c0.7,-0 0.9,0.2 0.9,0.7l-0,1.4c-0,0.5 -0.2,0.8 -0.5,0.8c-0.6,-0 -4.2,-0.2 -9.2,-0.2c-5.2,-0 -8.5,0.2 -9.2,0.2c-0.4,-0 -0.6,-0.3 -0.6,-0.8l-0,-1.4c-0,-0.6 0.2,-0.7 1.1,-0.7l3.9,-0c0.9,-0 1.7,-0.6 1.8,-2c0.1,-2.5 0.1,-16.5 0.1,-21.2l-0,-5.1c-0,-5.8 -0.1,-13.2 -0.2,-15.3c-0.2,-2.8 -1.5,-4.1 -4.1,-4.9l-1.6,-0.6c-0.4,-0.2 -0.5,-0.2 -0.5,-0.4l-0,-0.7c-0,-0.2 0.2,-0.4 0.7,-0.6c2.8,-1.3 6.5,-2.8 9.5,-4.7c0.7,-0.5 1.2,-0.7 1.7,-0.7c0.6,-0 0.7,0.4 0.7,1.5c-0.1,4.5 -0.3,21.4 -0.3,25.9l-0,7.2Z"/><path class="n" d="M0.1,39.9l58.4,-25.9l-0,-13.1l-58.4,0l-0,39Z"/><path class="g" d="M18.5,59.3l0,-23.4l-18.4,8.2l0,15.2l18.4,-0Z"/><path class="g" d="M35.9,59.3l-0,-31.1l-13.4,5.9l-0,25.2l13.4,-0Z"/><path class="g" d="M58.4,59.3l-0,-41.1l-18.4,8.2l-0,32.9l18.4,-0Z"/></svg><span>Mielech, Panek i Wspólnicy sp.k.</span></div>
+      <div>
+      <h1>Weryfikator roszczenia przesyłowego</h1>
+      <p class="author">autor: Wojciech Wieczorek</p>
+      <p class="lead">Szacuje, ile może być warte roszczenie właściciela działki, przez którą biegnie linia energetyczna, gazociąg albo wodociąg, i czy są podstawy, żeby je zgłosić.</p>
+      </div>
+    </div>
+    <div class="chip">Szacunek: <b id="chipTotal">–</b></div>
+  </header>
+
+  <div class="grid">
+    <div class="forms">
+      <p id="jsWarn" style="margin:0;padding:12px 14px;border-radius:7px;background:var(--bad-soft);color:var(--bad);font-weight:600">Ten podgląd nie uruchamia kalkulatora, więc wynik się nie przelicza. Otwórz plik w przeglądarce (Safari lub Chrome) albo przez link do strony.</p>
+      <p class="example">Formularz jest wypełniony przykładowymi danymi (działka budowlana z linią średniego napięcia). Wpisz dane swojej działki.</p>
+
+      <section class="card" aria-labelledby="h-dz">
+        <h2 id="h-dz"><span class="step">1</span>Działka</h2>
+        <div class="row">
+          <label for="parcelId">Identyfikator działki <span class="sub">np. 181603_5.0004.1809</span>
+            <input id="parcelId" type="text" value="" placeholder="opcjonalnie" autocomplete="off">
+          </label>
+          <label for="landType">Przeznaczenie gruntu
+            <select id="landType">
+              <option value="rolna">Rolna</option>
+              <option value="lesna">Leśna</option>
+              <option value="bud_nz" selected>Budowlana – niezabudowana</option>
+              <option value="bud_z">Budowlana – zabudowana</option>
+              <option value="uslug">Usługowa / inwestycyjna</option>
+            </select>
+          </label>
+        </div>
+        <p class="hint" id="geoLinkWrap" hidden>Podgląd w Geoportalu: <a id="geoLink" href="#" target="_blank" rel="noopener">otwórz działkę</a> (włącz warstwę „Uzbrojenie terenu”).</p>
+        <div class="row">
+          <label for="area">Powierzchnia działki
+            <span class="unit"><input id="area" type="text" inputmode="decimal" autocomplete="off" value="1500"><span>m²</span></span>
+          </label>
+          <label for="price">Cena gruntu
+            <span class="unit"><input id="price" type="text" inputmode="decimal" autocomplete="off" value="120"><span>zł/m²</span></span>
+            <span class="sub">Sprawdź ceny transakcyjne w Rejestrze Cen Nieruchomości (Geoportal).</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-inf">
+        <h2 id="h-inf"><span class="step">2</span>Infrastruktura na działce</h2>
+        <div class="row">
+          <label for="infra">Rodzaj urządzenia
+            <select id="infra">
+              <option value="nn">Linia niskiego napięcia 0,4 kV</option>
+              <option value="sn" selected>Linia średniego napięcia 15–30 kV</option>
+              <option value="wn">Linia wysokiego napięcia 110 kV</option>
+              <option value="nn220">Linia 220 kV</option>
+              <option value="nn400">Linia 400 kV</option>
+              <option value="kabel">Kabel ziemny (energetyczny / telekom.)</option>
+              <option value="gaz_w">Gazociąg wysokiego ciśnienia</option>
+              <option value="gaz_s">Gazociąg średniego / niskiego ciśnienia</option>
+              <option value="woda">Wodociąg / kanalizacja</option>
+            </select>
+          </label>
+          <label for="length">Długość odcinka na działce
+            <span class="unit"><input id="length" type="text" inputmode="decimal" autocomplete="off" value="40"><span>m</span></span>
+          </label>
+        </div>
+        <div class="row">
+          <label for="width">Szerokość pasa ochronnego (łącznie)
+            <span class="unit"><input id="width" type="text" inputmode="decimal" autocomplete="off" value="12"><span>m</span></span>
+            <span class="sub" id="widthHint">Typowo 10–15 m. Wartość ustawia się sama po wyborze rodzaju urządzenia.</span>
+          </label>
+          <label for="poles">Liczba słupów na działce
+            <input id="poles" type="text" inputmode="decimal" autocomplete="off" value="1">
+          </label>
+          <label for="poleArea">Teren zajęty przez jeden słup
+            <span class="unit"><input id="poleArea" type="text" inputmode="decimal" autocomplete="off" value="4"><span>m²</span></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-zab">
+        <h2 id="h-zab"><span class="step">3</span>Wpływ na zabudowę i użytkowanie</h2>
+        <div class="row">
+          <label for="impact">Jak pas wpływa na zabudowę
+            <select id="impact">
+              <option value="0.75">Pas poza miejscem, gdzie można budować</option>
+              <option value="1">Ogranicza zabudowę (trzeba przesunąć budynek)</option>
+              <option value="1.25" selected>Wyklucza zabudowę w pasie</option>
+              <option value="1.15">Pas nad budynkiem lub przy nim (blokuje rozbudowę)</option>
+            </select>
+          </label>
+          <label for="rest">Spadek wartości reszty działki
+            <select id="rest">
+              <option value="0">0% – reszta działki w pełni użyteczna</option>
+              <option value="5">5% – drobne utrudnienia</option>
+              <option value="10" selected>10% – trudniej ustawić budynek</option>
+              <option value="20">20% – zostaje mało miejsca na budynek</option>
+              <option value="30">30% – działka praktycznie niezabudowywalna</option>
+            </select>
+          </label>
+        </div>
+        <label for="k">Stopień ograniczenia własności w pasie (współczynnik k)
+          <span class="kline"><input id="k" type="range" min="0.1" max="0.9" step="0.01" value="0.69"><output id="kOut" class="num">0,69</output></span>
+          <span class="sub">Ustawiany automatycznie z przeznaczenia gruntu i wpływu na zabudowę. Możesz go zmienić. <button type="button" class="linkbtn" id="kReset" hidden>Przywróć automatyczny</button></span>
+        </label>
+        <div class="row">
+          <label for="years">Okres bezumownego korzystania
+            <span class="unit"><input id="years" type="text" inputmode="decimal" autocomplete="off" value="6"><span>lat</span></span>
+            <span class="sub">Maksymalnie 6 lat wstecz (przedawnienie).</span>
+          </label>
+          <label for="rate">Roczna stopa wynagrodzenia
+            <span class="unit"><input id="rate" type="text" inputmode="decimal" autocomplete="off" value="6"><span>%</span></span>
+            <span class="sub">Stosowana przez rzeczoznawców przy czynszu za korzystanie.</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-pr">
+        <h2 id="h-pr"><span class="step">4</span>Stan prawny</h2>
+        <p class="hint">Od tych odpowiedzi zależy, czy roszczenie w ogóle przysługuje.</p>
+        <div class="row">
+          <label for="built">Kiedy postawiono urządzenie
+            <select id="built">
+              <option value="prl" selected>Przed 1990 r.</option>
+              <option value="pre08">1990 – 2 sierpnia 2008 r.</option>
+              <option value="post08">Po 3 sierpnia 2008 r.</option>
+              <option value="unk">Nie wiem</option>
+            </select>
+          </label>
+          <label for="contract">Umowa lub służebność z operatorem
+            <select id="contract"><option value="no" selected>Nie ma</option><option value="yes">Jest</option><option value="unk">Nie wiem</option></select>
+          </label>
+          <label for="decision">Decyzja administracyjna (wywłaszczenie, art. 35 ust. o gosp. terenami, art. 124 ugn)
+            <select id="decision"><option value="no" selected>Nie było</option><option value="yes">Była</option><option value="unk">Nie wiem</option></select>
+          </label>
+          <label for="paid">Właściciel dostał kiedyś odszkodowanie
+            <select id="paid"><option value="no" selected>Nie</option><option value="yes">Tak</option><option value="unk">Nie wiem</option></select>
+          </label>
+          <label for="usuc">Sąd stwierdził zasiedzenie na rzecz operatora
+            <select id="usuc"><option value="no" selected>Nie</option><option value="yes">Tak</option><option value="unk">Nie wiem</option></select>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <aside class="result" id="wynik" aria-live="polite">
+      <div class="total">
+        <span class="label">Szacowane roszczenie łącznie</span>
+        <span class="big" id="total">–</span>
+        <span class="range" id="range">–</span>
+        <table>
+          <tbody>
+            <tr><td>Pas ochronny na działce</td><td id="rPas">–</td></tr>
+            <tr><td>Ograniczenie w pasie (k)</td><td id="rPasVal">–</td></tr>
+            <tr><td>Teren pod słupami (100%)</td><td id="rPole">–</td></tr>
+            <tr><td>Spadek wartości reszty działki</td><td id="rRest">–</td></tr>
+            <tr class="sum"><td>Wynagrodzenie za służebność przesyłu (jednorazowo)</td><td id="rServ">–</td></tr>
+            <tr><td>Bezumowne korzystanie – rocznie</td><td id="rYear">–</td></tr>
+            <tr class="sum"><td id="rBezLabel">Bezumowne korzystanie – 6 lat</td><td id="rBez">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verdict" id="verdictBox">
+        <span class="pill" id="pill">–</span>
+        <ul id="reasons"></ul>
+      </div>
+
+      <div class="sketch">
+        <svg id="svg" viewBox="0 0 300 200" role="img" aria-label="Schemat działki z pasem ochronnym"></svg>
+        <div class="legend"><span><i style="background:var(--accent-soft);border:1.5px solid var(--accent)"></i>działka</span><span><i style="background:var(--strip-soft);border:1.5px solid var(--strip)"></i>pas ochronny</span><span><i style="background:var(--fg)"></i>słup</span></div>
+        <p class="small">Schemat poglądowy: działka narysowana jako kwadrat o podanej powierzchni, proporcje pasa zachowane.</p>
+      </div>
+
+      <div class="note">
+        <strong>Podsumowanie do wysłania</strong>
+        <textarea id="noteText" readonly></textarea>
+        <button class="btn" type="button" id="copyBtn">Kopiuj tekst</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="contact" style="margin-top:24px">
+    <strong>MP Legal Mielech, Panek i Wspólnicy sp.k.</strong>
+    <span>ul. Kreczmera 4/4, 35-065 Rzeszów</span>
+    <span>tel. +48 17 200 08 85 · biuro@mpls.com.pl · <a href="https://mpls.com.pl" target="_blank" rel="noopener">mpls.com.pl</a></span>
+  </div>
+
+  <div class="mbar" aria-hidden="false"><div><span class="lbl">Szacunek roszczenia</span><span class="val" id="mTotal">–</span></div><a href="#wynik">Zobacz wynik</a></div>
+
+  <footer>
+    <p>Jak liczymy: wynagrodzenie za służebność = cena × (pas bez słupów) × k + cena × teren pod słupami + spadek wartości reszty działki. Bezumowne korzystanie = roczna stopa × wartość ograniczenia w pasie i pod słupami × liczba lat. To dwa odrębne roszczenia (art. 305² oraz art. 224–225 Kodeksu cywilnego). Widełki to −25% / +30% od wartości środkowej.</p>
+    <p>Wynik jest orientacyjny i nie zastępuje operatu szacunkowego rzeczoznawcy ani porady prawnej. Szerokości pasów to wartości typowe; rzeczywiste wynikają z dokumentacji operatora, norm i miejscowego planu.</p>
+    <p>Podstawa: wyrok Trybunału Konstytucyjnego z 2 grudnia 2025 r., sygn. P 10/16 (zasiedzenie służebności przesyłu za okres przed 3 sierpnia 2008 r.). Na dzień przygotowania kalkulatora wyrok nie był opublikowany w Dzienniku Ustaw.</p>
+    <p style="margin-top:6px;color:var(--fg);opacity:.7">© 2026 Wojciech Wieczorek</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  try{ $("jsWarn").hidden = true; }catch(e){}
+  const INFRA = {
+    nn:{w:6,pole:1,hint:"Typowo 4–6 m."},
+    sn:{w:12,pole:4,hint:"Typowo 10–15 m."},
+    wn:{w:36,pole:40,hint:"Typowo 30–40 m."},
+    nn220:{w:50,pole:80,hint:"Typowo 50 m."},
+    nn400:{w:70,pole:120,hint:"Typowo 70–80 m."},
+    kabel:{w:2,pole:0,hint:"Typowo 1–2 m."},
+    gaz_w:{w:8,pole:0,hint:"Strefa kontrolowana typowo 4–12 m."},
+    gaz_s:{w:2,pole:0,hint:"Typowo 1–2 m."},
+    woda:{w:4,pole:0,hint:"Typowo 3–5 m."}
+  };
+  const KBASE = {rolna:.30, lesna:.30, bud_nz:.55, bud_z:.45, uslug:.60};
+  let kManual = false;
+
+  const zl = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v)) + " zł";
+  const m2 = v => new Intl.NumberFormat("pl-PL",{maximumFractionDigits:0}).format(Math.round(v)) + " m²";
+  const num = id => { const v = parseFloat(String($(id).value).replace(/\s/g,"").replace(",", ".")); return isFinite(v) && v > 0 ? v : 0; };
+
+  function autoK(){
+    const k = Math.min(.9, KBASE[$("landType").value] * parseFloat($("impact").value));
+    return Math.round(k*100)/100;
+  }
+
+  function verdict(){
+    const v = id => $(id).value;
+    const reasons = [];
+    let level = "ok";
+    const down = l => { if(l==="bad" || (l==="warn" && level==="ok")) level = l; };
+
+    if(v("contract")==="yes"){ down("bad"); reasons.push("Jest umowa lub ustanowiona służebność. Roszczenie przysługuje tylko wtedy, gdy operator korzysta z większego pasa niż w umowie."); }
+    else if(v("contract")==="unk"){ down("warn"); reasons.push("Sprawdź księgę wieczystą (dział III) i dokumenty w urzędzie, czy nie ma umowy lub służebności."); }
+    else reasons.push("Brak umowy i służebności to podstawowy warunek roszczenia.");
+
+    if(v("decision")==="yes"){ down("warn"); reasons.push("Była decyzja administracyjna. Trzeba sprawdzić, czy przewidywała odszkodowanie i czy obejmuje obecny zakres urządzeń."); }
+    else if(v("decision")==="unk"){ down("warn"); reasons.push("Warto zapytać operatora i starostwo o decyzje z czasu budowy."); }
+
+    if(v("paid")==="yes"){ down("warn"); reasons.push("Wypłacone odszkodowanie może zamykać część roszczeń. Potrzebna analiza dokumentów."); }
+    else if(v("paid")==="unk") down("warn");
+
+    if(v("usuc")==="yes"){ down("warn"); reasons.push("Jest prawomocne zasiedzenie. Możliwe wznowienie postępowania po publikacji wyroku TK P 10/16, ale to sprawa dla prawnika."); }
+    else if(v("usuc")==="unk"){ down("warn"); reasons.push("Sprawdź, czy operator nie uzyskał wcześniej postanowienia o zasiedzeniu."); }
+
+    const b = v("built");
+    if(b==="prl" || b==="pre08") reasons.push("Urządzenie sprzed 3.08.2008 r. Wyrok TK z 2.12.2025 r. podważył nieodpłatne zasiedzenie za ten okres.");
+    else if(b==="post08") reasons.push("Urządzenie po 2008 r. Okres potrzebny do zasiedzenia jeszcze nie upłynął, więc operator raczej nie obroni się zasiedzeniem.");
+    else { down("warn"); reasons.push("Ustal rok budowy (operator, archiwum gminy, starostwo)."); }
+
+    const pill = $("pill");
+    pill.className = "pill " + level;
+    pill.textContent = level==="ok" ? "Mocne podstawy" : level==="warn" ? "Do weryfikacji" : "Słabe podstawy";
+    $("reasons").innerHTML = "";
+    reasons.forEach(r => { const li = document.createElement("li"); li.textContent = r; $("reasons").appendChild(li); });
+    return pill.textContent;
+  }
+
+  function sketch(P, Ppas, L, w, n){
+    const svg = $("svg");
+    const side = Math.sqrt(P || 1);
+    const box = 170, ox = 65, oy = 15, s = box/side;
+    const len = Math.min(L, side*1.41);
+    const horiz = Math.min(len, side);
+    const sw = Math.max(2, Math.min(box, w*s));
+    const sy = oy + box/2 - sw/2;
+    const sx = ox + (box - horiz*s)/2;
+    let poles = "";
+    for(let i=0;i<n && i<12;i++){
+      const px = sx + (horiz*s)*((i+1)/(Math.min(n,12)+1));
+      poles += `<rect x="${px-3.5}" y="${oy+box/2-3.5}" width="7" height="7" fill="var(--fg)"/>`;
+    }
+    svg.innerHTML =
+      `<defs><clipPath id="clipP"><rect x="${ox}" y="${oy}" width="${box}" height="${box}"/></clipPath></defs>`+
+      `<rect x="${ox}" y="${oy}" width="${box}" height="${box}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>`+
+      `<g clip-path="url(#clipP)"><rect x="${sx}" y="${sy}" width="${horiz*s}" height="${sw}" fill="var(--strip-soft)" stroke="var(--strip)" stroke-width="1.5"/>`+
+      `<line x1="${sx}" y1="${oy+box/2}" x2="${sx+horiz*s}" y2="${oy+box/2}" stroke="var(--strip)" stroke-width="1.5" stroke-dasharray="5 4"/>${poles}</g>`+
+      `<text x="${ox+box/2}" y="${oy+box+0}" dy="-6" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${Math.round(side)} m</text>`+
+      `<text x="${ox+box+8}" y="${oy+box/2+4}" font-size="11" fill="var(--fg)" font-family="IBM Plex Mono, monospace">pas ${w} m</text>`+
+      `<text x="${ox-8}" y="${oy+14}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${P? Math.round(Ppas/P*100):0}%</text>`+
+      `<text x="${ox-8}" y="${oy+28}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="Open Sans, sans-serif">w pasie</text>`;
+  }
+
+  function calc(){
+    const P = num("area"), W = num("price"), L = num("length"), w = num("width");
+    const n = Math.floor(num("poles")), aS = num("poleArea");
+    if(!kManual){ $("k").value = autoK(); }
+    const k = parseFloat($("k").value);
+    $("kOut").textContent = k.toFixed(2).replace(".",",");
+    $("kReset").hidden = !kManual;
+
+    const Ppas = Math.min(L*w, P);
+    const Pslup = Math.min(n*aS, Ppas);
+    const pasVal = W*(Ppas-Pslup)*k;
+    const poleVal = W*Pslup;
+    const restVal = W*Math.max(0,P-Ppas)*(parseFloat($("rest").value)/100);
+    const serv = pasVal + poleVal + restVal;
+    const years = Math.min(6, Math.max(0, Math.floor(num("years"))));
+    const yearly = (pasVal + poleVal) * (num("rate")/100);
+    const bez = yearly * years;
+    const total = serv + bez;
+
+    $("rPas").textContent = m2(Ppas);
+    $("rPasVal").textContent = zl(pasVal);
+    $("rPole").textContent = zl(poleVal);
+    $("rRest").textContent = zl(restVal);
+    $("rServ").textContent = zl(serv);
+    $("rYear").textContent = zl(yearly);
+    $("rBezLabel").textContent = "Bezumowne korzystanie – " + years + (years===1?" rok":(years>=2&&years<=4?" lata":" lat"));
+    $("rBez").textContent = zl(bez);
+    $("total").textContent = zl(total);
+    $("range").textContent = "widełki: " + zl(total*.75) + " – " + zl(total*1.3);
+    $("chipTotal").textContent = zl(total);
+    $("mTotal").textContent = zl(total);
+
+    const id = $("parcelId").value.trim();
+    $("geoLinkWrap").hidden = !id;
+    const geo = id ? "https://mapy.geoportal.gov.pl/imap/Imgp_2.html?identifyParcel=" + encodeURIComponent(id).replace(/%2F/g,"/") : "";
+    if(id) $("geoLink").href = geo;
+
+    const ocena = verdict();
+    sketch(P, Ppas, L, w, n);
+
+    const infraTxt = $("infra").options[$("infra").selectedIndex].text;
+    const landTxt = $("landType").options[$("landType").selectedIndex].text;
+    $("noteText").value =
+`Wstępna ocena roszczenia za urządzenie przesyłowe na działce${id ? " " + id : ""}
+
+- Przeznaczenie: ${landTxt}, powierzchnia ${m2(P)}, cena gruntu ${W} zł/m²
+- Urządzenie: ${infraTxt}, ${L} m na działce, pas ochronny ${w} m, słupy: ${n}
+- Pas zajmuje ${m2(Ppas)} (${P?Math.round(Ppas/P*100):0}% działki)
+
+Szacunek:
+- wynagrodzenie za ustanowienie służebności przesyłu: ok. ${zl(serv)}
+- wynagrodzenie za bezumowne korzystanie (${years} lat): ok. ${zl(bez)}
+- razem: ok. ${zl(total)} (widełki ${zl(total*.75)} – ${zl(total*1.3)})
+
+Ocena podstaw roszczenia: ${ocena}
+
+Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w operacie szacunkowym.${geo ? "\nDziałka w Geoportalu: " + geo : ""}`;
+  }
+
+  $("infra").addEventListener("change", () => {
+    const d = INFRA[$("infra").value];
+    $("width").value = d.w; $("poleArea").value = d.pole;
+    if(d.pole === 0) $("poles").value = 0;
+    $("widthHint").textContent = d.hint + " Wartość ustawia się sama po wyborze rodzaju urządzenia.";
+    calc();
+  });
+  $("k").addEventListener("input", () => { kManual = true; calc(); });
+  $("kReset").addEventListener("click", () => { kManual = false; calc(); });
+  ["landType","impact"].forEach(id => $(id).addEventListener("change", () => { kManual = false; calc(); }));
+  document.querySelectorAll("input:not(#k),select").forEach(el => {
+    if(el.id==="infra"||el.id==="landType"||el.id==="impact") return;
+    el.addEventListener("input", calc); el.addEventListener("change", calc);
+  });
+  $("copyBtn").addEventListener("click", () => {
+    const t = $("noteText");
+    const done = () => { $("copyBtn").textContent = "Skopiowano"; setTimeout(()=>$("copyBtn").textContent="Kopiuj tekst",1800); };
+    try{
+      navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); });
+    }catch(e){ t.select(); }
+  });
+  calc();
+})();
+</script>
+
+</body>
+</html>
