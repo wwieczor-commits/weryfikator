@@ -947,7 +947,7 @@ Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w opera
     try{
       keep(await auth("token?grant_type=password", {email:$("crmEmail").value.trim(), password:$("crmPass").value}));
       $("crmPass").value = ""; msg(""); view(); load();
-    }catch(err){ msg(/invalid/i.test(err.message) ? "Nieprawidłowy e-mail lub hasło." : err.message, "err"); }
+    }catch(err){ msg(/invalid login credentials/i.test(err.message) ? "Nieprawidłowy e-mail lub hasło." : /not confirmed/i.test(err.message) ? "Konto nie jest potwierdzone (Supabase: Authentication → Users)." : "Nie udało się zalogować: " + err.message, "err"); }
   });
   $("crmLogout").addEventListener("click", () => { logout(false); msg("Wylogowano.", "ok"); });
   $("crmPwToggle").addEventListener("click", () => { $("crmPw").hidden = !$("crmPw").hidden; if(!$("crmPw").hidden) $("crmPw1").focus(); });
