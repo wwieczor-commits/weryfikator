@@ -222,7 +222,12 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
           <div class="btns"><button class="btn" type="submit">Zaloguj</button><button class="btn sec" type="button" id="crmHide">Ukryj</button></div>
         </form>
         <div id="crmIn" hidden style="display:grid;gap:14px">
-          <div class="who"><span>Zalogowano: <b id="crmUser"></b></span><button type="button" class="linkbtn" id="crmLogout">Wyloguj</button></div>
+          <div class="who"><span>Zalogowano: <b id="crmUser"></b></span><span class="btns"><button type="button" class="linkbtn" id="crmPwToggle">Zmień hasło</button><button type="button" class="linkbtn" id="crmLogout">Wyloguj</button></span></div>
+          <form id="crmPw" class="row" hidden>
+            <label for="crmPw1">Nowe hasło<input id="crmPw1" type="password" autocomplete="new-password" minlength="8" required></label>
+            <label for="crmPw2">Powtórz nowe hasło<input id="crmPw2" type="password" autocomplete="new-password" minlength="8" required></label>
+            <div class="btns" style="align-self:end"><button class="btn" type="submit">Zapisz hasło</button></div>
+          </form>
           <p class="cur" id="crmCur"></p>
           <p class="hint">Imię i nazwisko klienta oraz położenie działki wpisz w kroku 1 (Właściciel, Położenie). Tu dopisz kontakt.</p>
           <div class="row">
@@ -931,7 +936,7 @@ Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w opera
   function logout(silent){
     const t = sess && sess.access_token;
     if(t && !silent) fetch(SB_URL + "/auth/v1/logout", {method:"POST", headers:{apikey:SB_KEY, Authorization:"Bearer " + t}}).catch(() => {});
-    sess = null; store.set(null); cases = []; curId = null; savedSnap = null;
+    sess = null; store.set(null); cases = []; curId = null; savedSnap = null; $("crmPw").hidden = true;
     $("crmList").innerHTML = ""; view();
   }
 
@@ -945,6 +950,20 @@ Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w opera
     }catch(err){ msg(/invalid/i.test(err.message) ? "Nieprawidłowy e-mail lub hasło." : err.message, "err"); }
   });
   $("crmLogout").addEventListener("click", () => { logout(false); msg("Wylogowano.", "ok"); });
+  $("crmPwToggle").addEventListener("click", () => { $("crmPw").hidden = !$("crmPw").hidden; if(!$("crmPw").hidden) $("crmPw1").focus(); });
+  $("crmPw").addEventListener("submit", async e => {
+    e.preventDefault();
+    const a = $("crmPw1").value, b = $("crmPw2").value;
+    if(a !== b){ msg("Hasła się różnią. Wpisz to samo hasło dwa razy.", "err"); return; }
+    msg("Zmieniam hasło…");
+    try{
+      const r = await fetch(SB_URL + "/auth/v1/user", {method:"PUT", headers:{apikey:SB_KEY, Authorization:"Bearer " + await token(), "Content-Type":"application/json"}, body:JSON.stringify({password:a})});
+      const j = await r.json().catch(() => ({}));
+      if(!r.ok) throw new Error(/same/i.test(j.msg || j.message || "") ? "Nowe hasło musi być inne niż obecne." : (j.msg || j.message || ("Błąd " + r.status)));
+      $("crmPw1").value = $("crmPw2").value = ""; $("crmPw").hidden = true;
+      msg("Hasło zmienione. Następnym razem zaloguj się nowym hasłem.", "ok");
+    }catch(err){ msg(err.message, "err"); }
+  });
   $("crmSave").addEventListener("click", save);
   $("crmNew").addEventListener("click", () => {
     if(dirty() && !confirm("Bieżąca sprawa ma niezapisane zmiany. Zacząć nową mimo to?")) return;
