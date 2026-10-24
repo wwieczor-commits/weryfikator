@@ -127,6 +127,51 @@ tr.sum td:last-child{font-weight:500}
 .addbtn{min-height:44px;justify-self:start;background:var(--panel);color:var(--accent);border:1.5px dashed var(--accent);border-radius:7px;font:inherit;font-weight:700;font-size:14px;padding:9px 16px;cursor:pointer}
 td .d{display:block;color:var(--muted);font-size:12px;white-space:normal}
 footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:grid;gap:6px}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn.sec{background:var(--panel);color:var(--accent);border:1.5px solid var(--accent)}
+.report{display:none}
+@media print{
+  @page{size:A4;margin:14mm 14mm 16mm}
+  :root,:root:not([data-theme="light"]),:root[data-theme="dark"]{
+    --bg:#ffffff; --panel:#ffffff; --fg:#182434; --muted:#5a6475; --line:#d9dee6;
+    --accent:#0f3c64; --accent-soft:#e3ebf3; --strip:#bb8e59; --strip-soft:#f5ecdf; --logo-t:#231f20;
+    --c-power:#bb8e59; --c-gas:#d9822b; --c-water:#2f7789; --c-sewer:#7a5c45;
+    --ok:#2e7d4f; --ok-soft:#dff1e6; --warn:#a86a00; --warn-soft:#fbefd3; --bad:#b3261e; --bad-soft:#f9dedb; color-scheme:light}
+  body{background:#fff;font-size:10.5pt;line-height:1.4}
+  .wrap,.mbar{display:none!important}
+  .report{display:block;color:#182434;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .r-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5pt solid var(--accent);padding-bottom:8pt;margin-bottom:12pt}
+  .r-logo{display:flex;flex-direction:column;gap:3pt}
+  .r-logo svg{height:34pt;width:auto}
+  .r-logo .t{fill:var(--logo-t)} .r-logo .n{fill:var(--accent)} .r-logo .g{fill:var(--strip)}
+  .r-logo span{font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .r-meta{text-align:right;font-size:9pt;color:var(--muted)}
+  .r-meta b{color:var(--fg)}
+  .r-title{font-family:var(--font-display);font-size:17pt;color:var(--accent);margin:0 0 2pt;line-height:1.2}
+  .r-sub{margin:0 0 10pt;color:var(--muted)}
+  .report h2{font-family:var(--font-display);font-size:11.5pt;color:var(--accent);margin:12pt 0 5pt;padding-bottom:2pt;border-bottom:.75pt solid var(--strip);break-after:avoid}
+  .report table{width:100%;border-collapse:collapse;font-size:9.5pt;break-inside:avoid}
+  .r-kv th{text-align:left;font-weight:600;color:var(--muted);width:38%;padding:3pt 8pt 3pt 0;border-top:.5pt solid var(--line);vertical-align:top}
+  .r-kv td{padding:3pt 0;border-top:.5pt solid var(--line);text-align:left;white-space:normal;font-family:inherit}
+  .r-kv td.url{font-size:8pt;word-break:break-all}
+  .r-two{display:grid;grid-template-columns:1fr 120pt;gap:10pt;align-items:start}
+  .r-grid th{background:var(--accent);color:#fff;font-weight:600;font-size:8pt;text-align:left;padding:4pt 4pt}
+  .r-grid td{font-size:8.5pt;padding:4pt;border-top:.5pt solid var(--line);text-align:left;white-space:normal;font-family:inherit}
+  .report td.n{text-align:right;font-family:var(--font-mono);white-space:nowrap}
+  .r-sketch svg{width:100%;height:auto}
+  .r-sketch p{font-size:7pt;color:var(--muted);margin:2pt 0 0}
+  .r-note{font-size:9pt;color:var(--muted);margin:4pt 0 0}
+  .r-calc td{padding:4pt 0;border-top:.5pt solid var(--line);text-align:left;font-family:inherit;white-space:normal}
+  .r-calc tr.s td{font-weight:700}
+  .r-calc tr.t td{font-weight:800;font-size:12pt;color:var(--accent);border-top:1.5pt solid var(--accent);padding-top:6pt}
+  .r-verdict{display:inline-block;font-weight:700;font-size:9pt;text-transform:uppercase;letter-spacing:.05em;padding:3pt 9pt;border-radius:10pt;margin:0 0 6pt}
+  .r-verdict.ok{background:var(--ok-soft);color:var(--ok)} .r-verdict.warn{background:var(--warn-soft);color:var(--warn)} .r-verdict.bad{background:var(--bad-soft);color:var(--bad)}
+  .r-list{margin:6pt 0 0;padding-left:14pt;font-size:9.5pt}
+  .report p{margin:0 0 5pt}
+  .r-disc{font-size:8.5pt;color:var(--muted);border:.75pt solid var(--line);padding:6pt 8pt;border-radius:4pt}
+  .r-foot{display:flex;justify-content:space-between;gap:16pt;margin-top:14pt;padding-top:8pt;border-top:1.5pt solid var(--accent);font-size:8.5pt;break-inside:avoid}
+  .r-auth{text-align:right;color:var(--muted)}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -164,6 +209,14 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
               <option value="bud_z">Budowlana – zabudowana</option>
               <option value="uslug">Usługowa / inwestycyjna</option>
             </select>
+          </label>
+        </div>
+        <div class="row">
+          <label for="owner">Właściciel <span class="sub">do raportu, opcjonalnie</span>
+            <input id="owner" type="text" value="" placeholder="imię i nazwisko" autocomplete="off">
+          </label>
+          <label for="place">Położenie działki <span class="sub">do raportu, opcjonalnie</span>
+            <input id="place" type="text" value="" placeholder="np. Mogielnica, gm. Boguchwała" autocomplete="off">
           </label>
         </div>
         <p class="hint" id="geoLinkWrap" hidden>Podgląd w Geoportalu: <a id="geoLink" href="#" target="_blank" rel="noopener">otwórz działkę</a> (włącz warstwę „Uzbrojenie terenu”).</p>
@@ -271,7 +324,8 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
       <div class="note">
         <strong>Podsumowanie do wysłania</strong>
         <textarea id="noteText" readonly></textarea>
-        <button class="btn" type="button" id="copyBtn">Kopiuj tekst</button>
+        <div class="btns"><button class="btn" type="button" id="printBtn">Raport PDF / drukuj</button><button class="btn sec" type="button" id="copyBtn">Kopiuj tekst</button></div>
+        <p class="small" id="printHint">Raport A4 z logo i pełnym wyliczeniem. Na telefonie wybierz w oknie drukowania „Zapisz jako PDF” albo udostępnij.</p>
       </div>
     </aside>
   </div>
@@ -291,6 +345,8 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     <p style="margin-top:6px;color:var(--fg);opacity:.7">© 2026 Wojciech Wieczorek</p>
   </footer>
 </div>
+
+<section id="report" class="report" aria-hidden="true"></section>
 
 <script>
 (function(){
@@ -525,6 +581,8 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:80ch;display:
     if(id) $("geoLink").href = geo;
 
     const ocena = verdict();
+    window.__last = {P, W, devs, restPct, restVal, serv, yearly, bez, years, yl, total, pasTotal, valSum, rate: num("rate"), id, geo,
+      landTxt: $("landType").options[$("landType").selectedIndex].text};
     sketch(P, devs);
 
     const landTxt = $("landType").options[$("landType").selectedIndex].text;
@@ -564,6 +622,102 @@ Szacunek orientacyjny. Ostateczną kwotę ustala rzeczoznawca majątkowy w opera
     const done = () => { $("copyBtn").textContent = "Skopiowano"; setTimeout(()=>$("copyBtn").textContent="Kopiuj tekst",1800); };
     try{ navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); }); }catch(e){ t.select(); }
   });
+
+
+  // ===== Raport PDF / druk =====
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const inFrame = (() => { try{ return window.self !== window.top; }catch(e){ return true; } })();
+  if(inFrame){
+    $("printHint").textContent = "Raport PDF i drukowanie działają w wersji na stronie internetowej (link do weryfikatora). W tym podglądzie przycisk nie otworzy drukowania.";
+  }
+
+  function buildReport(){
+    const L = window.__last; if(!L) return;
+    const now = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const nr = `RP/${now.getFullYear()}/${pad(now.getMonth()+1)}${pad(now.getDate())}/${pad(now.getHours())}${pad(now.getMinutes())}`;
+    const dateTxt = now.toLocaleDateString("pl-PL",{day:"numeric",month:"long",year:"numeric"});
+    const owner = $("owner").value.trim(), place = $("place").value.trim();
+    const logo = document.querySelector(".logo svg").outerHTML;
+    const sketch = $("svg").outerHTML.replace(/clipP/g,"clipR").replace('id="svg"','id="svgR"');
+    const reasons = [...document.querySelectorAll("#reasons li")].map(li => `<li>${esc(li.textContent)}</li>`).join("");
+    const lvl = $("pill").className.replace("pill","").trim();
+    const sel = id => $(id).options[$(id).selectedIndex].text;
+
+    const devRows = L.devs.map((d,i) => `<tr>
+        <td>${i+1}</td><td>${esc(d.t.name)}</td><td>${esc(POS[d.pos].name)}</td>
+        <td class="n">${fmt(d.len)} m</td><td class="n">${String(d.w).replace(".",",")} m</td>
+        <td class="n">${m2(d.pas)}</td><td class="n">${d.n} × ${fmt(d.a)} m²</td>
+        <td class="n">${d.k.toFixed(2).replace(".",",")}</td><td class="n">${zl(d.val)}</td></tr>`).join("");
+
+    $("report").innerHTML = `
+      <div class="r-head">
+        <div class="r-logo">${logo}<span>Mielech, Panek i Wspólnicy sp.k.</span></div>
+        <div class="r-meta"><div>Raport nr <b>${nr}</b></div><div>Data: ${dateTxt}</div></div>
+      </div>
+      <h1 class="r-title">Wstępna ocena roszczenia z tytułu urządzeń przesyłowych</h1>
+      <p class="r-sub">Służebność przesyłu i wynagrodzenie za bezumowne korzystanie z nieruchomości</p>
+
+      <h2>1. Dane nieruchomości</h2>
+      <table class="r-kv">
+        ${owner ? `<tr><th>Właściciel</th><td>${esc(owner)}</td></tr>` : ""}
+        ${place ? `<tr><th>Położenie</th><td>${esc(place)}</td></tr>` : ""}
+        <tr><th>Identyfikator działki</th><td>${L.id ? esc(L.id) : "nie podano"}</td></tr>
+        <tr><th>Przeznaczenie gruntu</th><td>${esc(L.landTxt)}</td></tr>
+        <tr><th>Powierzchnia</th><td>${m2(L.P)}</td></tr>
+        <tr><th>Przyjęta cena gruntu</th><td>${fmt(L.W)} zł/m² (wartość działki ok. ${zl(L.P*L.W)})</td></tr>
+        <tr><th>Możliwość zabudowy w pasie</th><td>${esc(sel("impact"))}</td></tr>
+        ${L.geo ? `<tr><th>Geoportal</th><td class="url">${esc(L.geo)}</td></tr>` : ""}
+      </table>
+
+      <h2>2. Urządzenia przesyłowe na działce</h2>
+      <div class="r-two">
+        <table class="r-grid">
+          <thead><tr><th>#</th><th>Urządzenie</th><th>Położenie</th><th>Długość</th><th>Pas</th><th>Pow. pasa</th><th>Słupy / obiekty</th><th>k</th><th>Wartość</th></tr></thead>
+          <tbody>${devRows}</tbody>
+        </table>
+        <div class="r-sketch">${sketch}<p>Schemat poglądowy położenia pasów (działka jako kwadrat o tej samej powierzchni).</p></div>
+      </div>
+      <p class="r-note">Pasy zajmują łącznie ${m2(L.pasTotal)}, czyli ${L.P ? Math.round(L.pasTotal/L.P*100) : 0}% powierzchni działki.</p>
+
+      <h2>3. Wyliczenie roszczenia</h2>
+      <table class="r-calc">
+        <tr><td>Wartość ograniczeń w pasach i terenu pod obiektami</td><td class="n">${zl(L.valSum)}</td></tr>
+        <tr><td>Spadek wartości pozostałej części działki (${Math.round(L.restPct*100)}% z ${m2(Math.max(0,L.P-L.pasTotal))})</td><td class="n">${zl(L.restVal)}</td></tr>
+        <tr class="s"><td>Wynagrodzenie za ustanowienie służebności przesyłu (jednorazowo)</td><td class="n">${zl(L.serv)}</td></tr>
+        <tr><td>Wynagrodzenie za bezumowne korzystanie – rocznie (stopa ${String(L.rate).replace(".",",")}%)</td><td class="n">${zl(L.yearly)}</td></tr>
+        <tr class="s"><td>Wynagrodzenie za bezumowne korzystanie – ${L.years}${L.yl}</td><td class="n">${zl(L.bez)}</td></tr>
+        <tr class="t"><td>Szacowane roszczenie łącznie</td><td class="n">${zl(L.total)}</td></tr>
+        <tr><td>Przedział szacunku</td><td class="n">${zl(L.total*.75)} – ${zl(L.total*1.3)}</td></tr>
+      </table>
+
+      <h2>4. Ocena podstaw roszczenia</h2>
+      <p class="r-verdict ${lvl}">${esc($("pill").textContent)}</p>
+      <table class="r-kv">
+        <tr><th>Rok budowy urządzeń</th><td>${esc(sel("built"))}</td></tr>
+        <tr><th>Umowa / służebność</th><td>${esc(sel("contract"))}</td></tr>
+        <tr><th>Decyzja administracyjna</th><td>${esc(sel("decision"))}</td></tr>
+        <tr><th>Wypłacone odszkodowanie</th><td>${esc(sel("paid"))}</td></tr>
+        <tr><th>Zasiedzenie stwierdzone przez sąd</th><td>${esc(sel("usuc"))}</td></tr>
+      </table>
+      <ul class="r-list">${reasons}</ul>
+
+      <h2>5. Metoda i podstawa prawna</h2>
+      <p>Dla każdego urządzenia wynagrodzenie liczone jest jako: cena gruntu × (powierzchnia pasa bez słupów i obiektów) × współczynnik ograniczenia k + cena gruntu × teren zajęty przez słupy i obiekty. Współczynnik k zależy od przeznaczenia gruntu, możliwości zabudowy i położenia urządzenia na działce. Wynagrodzenie za bezumowne korzystanie obejmuje maksymalnie 6 lat wstecz.</p>
+      <p>Podstawa: art. 305<sup>1</sup>–305<sup>4</sup> Kodeksu cywilnego (służebność przesyłu), art. 224–225 Kodeksu cywilnego (wynagrodzenie za bezumowne korzystanie), wyrok Trybunału Konstytucyjnego z 2 grudnia 2025 r., sygn. P 10/16.</p>
+      <p class="r-disc">Raport ma charakter wstępny i orientacyjny. Nie jest operatem szacunkowym w rozumieniu ustawy o gospodarce nieruchomościami ani opinią prawną. Ostateczną wysokość wynagrodzenia ustala rzeczoznawca majątkowy, a ocenę prawną – prawnik po analizie dokumentów (księga wieczysta, decyzje, umowy).</p>
+
+      <div class="r-foot">
+        <div><b>MP Legal Mielech, Panek i Wspólnicy sp.k.</b><br>ul. Kreczmera 4/4, 35-065 Rzeszów<br>tel. +48 17 200 08 85 · biuro@mpls.com.pl · mpls.com.pl</div>
+        <div class="r-auth">Weryfikator: Wojciech Wieczorek<br>© 2026 Wojciech Wieczorek</div>
+      </div>`;
+  }
+
+  $("printBtn").addEventListener("click", () => {
+    calc(); buildReport();
+    try{ window.print(); }catch(e){}
+  });
+  window.addEventListener("beforeprint", () => { calc(); buildReport(); });
 
   // przykład startowy
   addDevice({type:"sn", len:40, pos:"srodek"});
